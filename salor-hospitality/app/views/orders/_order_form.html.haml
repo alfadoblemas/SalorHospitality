@@ -21,7 +21,7 @@
 
 #categories
   - @categories.existing.active.positioned.each do |category|
-    .category{ :id => "category_#{ category.id }", :class => category.name.delete(' '), :style => "background-color: #{category.color}; background-image: url('#{category.icon_path}')", :onmousedown => "category_onmousedown(#{ category.id }, this)" }
+    .category{ :id => "category_#{ category.id }", :class => category.name.delete(' '), :style => "background-color: #{category.color}; background-image: url('#{category.icon_path}')", :onclick => "category_onmousedown(#{ category.id }, this)" }
       %div{ :class => "category_label" }
         %span= category.name
 
@@ -29,8 +29,10 @@
 
 #items
   .ordersum_container
-    %span== #{ t '.sum' } #{ t 'number.currency.format.unit', :locale => @region }
+    - if workstation?
+      %input#sku_input
     %span#order_sum
+  
   %table#itemstable
 
 %h3

@@ -82,13 +82,14 @@ hr:
         finished_at: Finished at
         nr: Broj
         sum: Sum
+        tax_sum: Taxes
       page:
         active: aktivan
         color: Boja
         height: Visina
         hidden: obriši
         image: Slika
-        width: Širina
+        width: "Širina"
       partial:
         active: aktivan
         blurb: Promotivna obavijest
@@ -116,7 +117,9 @@ hr:
         price: Varijanta cijene
         usage: uporaba
       role:
+        hidden: delete
         name: Ime
+        weight: Level
       room_price:
         base_price: Osnovna cijena
         guest_type_id: Vrsta gosta
@@ -158,8 +161,8 @@ hr:
         hidden: obriši
         name: Ime
         rotate: rotiraj?
-        width: Širina
-        width_mobile: Širina mobilno
+        width: "Širina"
+        width_mobile: "Širina mobilno"
       tax:
         color: Boja
         hidden: obriši
@@ -201,7 +204,7 @@ hr:
         automatic_printing: Automatsko ispisivanje
         country: Pravila za zemlju
         email: e-mail
-        enable_technician_emails: Šaljite tehničaru e-mailove
+        enable_technician_emails: "Šaljite tehničaru e-mailove"
         hidden: obriši
         invoice_footer_blurb: Promotivna obavijest u podnožju fakture
         invoice_header_blurb: Promotivna obavijest u zaglavlju fakture
@@ -217,8 +220,9 @@ hr:
         technician_email: E-mail tehničara
         ticket_display_time_order: Vrijeme i broj fakture na karti narudžbe
         ticket_item_separator: Separacijska linija karte narudžbe
+        ticket_space_top: Tickets space top
         ticket_tall_font: Visok font karte narudžbe
-        ticket_wide_font: Širok font karte narudžbe
+        ticket_wide_font: "Širok font karte narudžbe"
         time_offset: Korekcija vremena (sati)
         timeout: Vremensko ograničenje zaključavanja ekrana (sekunde)
         update_item_lists_interval: Interval ažuriranja obavijesti o artiklu
@@ -229,6 +233,7 @@ hr:
         baudrate: Brzina prijenosa
         codepage: Kodna stranica
         copies: Kopije
+        cut_every_ticket: Cut every ticket
         hidden: Obriši
         name: Ime
         path: Putanja
@@ -236,9 +241,14 @@ hr:
         pulse_receipt: Zvučni signal primitka
         pulse_tickets: Zvučni signal karta narudžbi
         ticket_ad: Ticket Ad.
+        one_ticket_per_piece: One ticket per piece
     errors:
       messages:
+        dont_use_weird_skus: may only contain letters A-Z and a-z and numbers from
+          0-9
+        invalid_iso_date_formatting: Dates must be entered in the format YYYY-MM-DD
         prefix_or_postfix_must_be_given: Mora se dati prefiks ili postfiks
+        sku_already_taken: has already been taken
     models:
       article:
         one: Artikl
@@ -348,6 +358,9 @@ hr:
       user:
         one: Korisnik
         other: Korisnici
+      user_login:
+        one: Work time
+        other: Work times
       vendor:
         one: Prodavač
         other: Prodavači
@@ -394,8 +407,11 @@ hr:
     invoice_item_list:
       served_by_X: Poslužio Vas je %{user}
     show:
+      count: Count
       go_to_bookings_calendar: Odi na pregled kalendara rezervacija
       search_by_number: Pretraži prema broju
+      sum: Sum
+      unit_price: Unit price
   cameras:
     create:
       success: Kamera je uspješno spremljena
@@ -432,8 +448,8 @@ hr:
       soup: Juha
       sparkling: Pjenušavo vino
       starter: Starter
-      tea: Šalica za čaj
-      teapot: Čajnik
+      tea: "Šalica za čaj"
+      teapot: "Čajnik"
       whitewinebottle: Butelja bijelo
       whitewineglass: Bijelo vino
   clear: očisti
@@ -495,10 +511,12 @@ hr:
   kitchen: Kuhinja
   layouts:
     application:
-      admin_menu_hint: ☚ Kliknite ovdje za otvaranje glavnog izbornika
+      admin_menu_hint: "☚ Kliknite ovdje za otvaranje glavnog izbornika"
       submit_scribe: OK
     header:
-      configuration: Konfiguracija
+      settings_common: General
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: odjavi se %{who}
   messages:
     hello_username: Pozdrav %{name}!
@@ -599,7 +617,7 @@ hr:
       new_page: Nova stranica
   partials:
     default_blurb: uredi me
-    error_during_evaluation: ! 'Greška: '
+    error_during_evaluation: 'Greška: '
     no_presentation_found:
       no_presentations_found: Nema definiranog predloška za ovu parcijalu.
   payment_methods:
@@ -662,6 +680,7 @@ hr:
       download_csv: Preuzmi CSV
       download_database: Preuzmi bazu podataka
       edit_role: Uredi ulogu
+      enter_payment_methods: Enter Payment Methods
       finish_all_settlements: Završi sve obračune
       finish_orders: Završi narudžbe
       finish_own_settlement: Završi vlastiti obračun
@@ -713,20 +732,20 @@ hr:
       split_items: Podijeli artikle
       statistics:
         statistics_category: Kategorije
-        statistics_hour: Sati
         statistics_payment_method: Načini plaćanja
         statistics_sold_quantities: Prodane količine
         statistics_statistic_category: Statističke kategorije
         statistics_table: Stolovi
         statistics_tax: Porezi
+        statistics_user: Users
         statistics_weekday: Radni dani
       statistics_category: Statistika pokaži kategorije
-      statistics_hour: Statistika pokaži sate
       statistics_payment_method: Statistika pokaži načine plaćanja
       statistics_sold_quantities: Statistika pokaži prodane količine
       statistics_statistic_category: Statistika pokaži Statističke kategorije
       statistics_table: Statistika pokaži stolove
       statistics_tax: Statistika pokaži poreze
+      statistics_user: Statistics show Users
       statistics_weekday: Statistika pokaži radne dane
       take_orders: Primi narudžbe
       view_all_settlements: Pogledaj sve obračune
@@ -751,6 +770,7 @@ hr:
       new_room: Nova soba
   scopes:
     active: Aktivan
+    inactive: Inactive
     waiterpad: Konobarev blok
   scroll_down: Pomakni prema dolje
   scroll_to_area: Odi u sobu
@@ -781,9 +801,9 @@ hr:
       username: Korisnik
   settlements:
     detailed_list:
-      changed_price: ! '%{byuser} je promijenio cijenu'
+      changed_price: "%{byuser} je promijenio cijenu"
       count: Brojanje
-      order_number_on_table_on_date: ! '%{order} broj %{number} na %{table} u %{time}'
+      order_number_on_table_on_date: "%{order} broj %{number} na %{table} u %{time}"
       reduced_count: Brojanje je smanjeno sa %{maxcount} na %{count}.
       revenue: Prihod
       total: Ukupno
@@ -816,6 +836,17 @@ hr:
       limit_by: Ograniči prema
       query: Upit
       weekday: Radni dan
+    statistics_sold_quantities:
+      article_name: Article name
+      category: Category
+      count: Sales count
+      quantity_name: Quantity name
+      sort_by: Sort by
+      sum: Revenue
+      tax: Tax
+    statistics_weekday:
+      public_holidays: Public holidays
+      weekday: Weekday
   stocks:
     new:
       edit_stock: Uredi zalihu
@@ -854,6 +885,7 @@ hr:
       select_with_ctrl_key: Označite ili ukinite označenost [Ctrl] + Lijeva tipka
         miša
   various:
+    already_finished_warning: This order has already been completed by someone else.
     attempt: Pokušaj
     begin: Počni
     cancel: Odustani
@@ -866,15 +898,15 @@ hr:
     customer_request_waiter: Zatraži konobara
     delete: Obriši
     display: Prikaži
-    double_submission_warning: ! 'Warning: Double submission. Please inform tech support
+    double_submission_warning: 'Warning: Double submission. Please inform tech support
       about this.'
     download: Preuzmi
     end: Kraj
     exception_page:
       assistance_text: Molimo Vas kliknite na gumb "POČETNA" i pokušajte ponovno.
         Ako vidite istu grešku dvaput, molimo Vas kontaktirajte našu korisničku podršku.
-      exception_description: ! 'Opis pogreške:'
-      exception_in_files: ! 'Došlo je do pogreške u sljedećim datotekama:'
+      exception_description: 'Opis pogreške:'
+      exception_in_files: 'Došlo je do pogreške u sljedećim datotekama:'
       oops_an_error_occurred: Ups! Došlo je do pogreške
     finish_was_requested: Zatražili ste plaćanje. Molimo Vas imajte malo strpljenja,
       uskoro ćemo biti tamo za Vas.
@@ -896,7 +928,7 @@ hr:
     report: Izvješće
     restaurant: Restoran
     save: Spremi
-    sending: Šaljem...
+    sending: "Šaljem..."
     server_error: Ups! Došlo je do interne serverske pogreške. Molimo Vas provjerite
       podnošenje narudžbe na drugom uređaju.
     server_error_short: Serverska pogreška
@@ -929,7 +961,7 @@ hr:
     form:
       add_printer: Dodaj pisač
       identify_printers: Identificiraj pisače
-      print_via_salorbin_explanation: ! 'Ako želite ispis preko salor-bin preglednika,
+      print_via_salorbin_explanation: 'Ako želite ispis preko salor-bin preglednika,
         kopirajte i zalijepite sljedeće detalje u dijalog opcija salor-bina:'
       test_printers: Testiraj pisače
       test_printers_chartest: Testiraj sve znakove
@@ -945,4 +977,4 @@ hr:
   white: Bijela
   winered: Vino crveno
   wrong_password: Krivi podaci za prijavu
-  yellow: Žuta
+  yellow: "Žuta"

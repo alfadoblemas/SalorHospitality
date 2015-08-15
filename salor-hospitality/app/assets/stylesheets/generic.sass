@@ -24,6 +24,9 @@ $green: #75b10d
 $blue: #136880
 $blank: #27343b
 
+.color_red
+  :color red
+
 div.area
   :height 460px
   
@@ -127,7 +130,7 @@ a.items_notifications_button
   
   
 a.items_notifications_button,
-a#mobile_last_invoices_button
+a.mobile_last_invoices_button
   :font-size 200%
   :font-weight bold
   :color red
@@ -263,8 +266,10 @@ a.logout_button
 a.move-to-table_button
   :background-image url(button_mobile_move-to-table.png)
 
-a#exit_button.exit_button
+a#exit_button.exit_button,
+a.exit_button
   :background-image url(button_mobile_exit.png)
+
 
 div.invoice
   :background-color white

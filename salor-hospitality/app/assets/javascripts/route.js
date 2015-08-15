@@ -60,6 +60,7 @@ function route(target, model_id, action, options) {
   // ========== GO TO TABLE ===============
   } else if ( target == 'table') {
     loadify_order_buttons();
+    
     if (action == 'send') {
       // finish order
       submit_json.jsaction = 'send';
@@ -133,7 +134,6 @@ function route(target, model_id, action, options) {
       
     } else if (action == 'specific_order') {
       switch_to_table();
-      unloadify_order_buttons();
       $.ajax({
         type: 'GET',
         url: '/tables/' + model_id,
@@ -141,6 +141,7 @@ function route(target, model_id, action, options) {
         timeout: 15000,
         cache: false,
         success: function() {
+          unloadify_order_buttons();
           render_items();
         }
       }); //this just fetches items_json and a few other state variables
@@ -154,8 +155,8 @@ function route(target, model_id, action, options) {
     } else {
       // regular click on a table from main view
       switch_to_table();
-      unloadify_order_buttons();
       get_table_show(model_id);
+      if (settings.workstation) $("#sku_input").focus();
     }
     
     // clean workspace up
@@ -186,9 +187,13 @@ function route(target, model_id, action, options) {
 
   // ========== GO TO ROOMS ===============
   } else if ( target == 'rooms' ) {
-    if ((navigator.userAgent.indexOf('Chrom') == -1 && navigator.userAgent.indexOf('WebKit') == -1) && typeof(i18n) != 'undefined') {
-      $('#main').html('');
-      create_dom_element('div',{id:'message'}, i18n.browser_warning, '#main');
+    if ((navigator.userAgent.indexOf('Chrom') == -1 &&
+      navigator.userAgent.indexOf('WebKit') == -1) &&
+      typeof(i18n) != 'undefined') {
+      //$('#main').html('');
+      //create_dom_element('div',{id:'message'}, i18n.browser_warning, '#main');
+      alert(i18n.browser_warning);
+      route("tables");
       return;
     }
     scroll_to($('#container'),20);

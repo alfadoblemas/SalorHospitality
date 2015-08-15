@@ -5,9 +5,8 @@
     - if mobile? or mobile_special?
       %meta{ 'name' => "viewport", :content => "width=device-width, initial-scale=1, maximum-scale=1.5, user-scalable=1" }
       %meta{ 'name' => "apple-mobile-web-app-capable", :content => "yes" }
-      %link{ :rel => "apple-touch-icon", :href => "/apple-touch-icon-57x57-#{@branding_codename}.png"}
-      %link{ :rel => "apple-touch-icon", :sizes => "72x72", :href => "/apple-touch-icon-72x72-#{@branding_codename}.png"}
-      %link{ :rel => "apple-touch-icon", :sizes => "114x114", :href => "/apple-touch-icon-114x114-#{@branding_codename}.png"}
+
+    = render :partial => "layouts/favicons"
 
     %title= @branding_title
 
@@ -16,7 +15,6 @@
     
     - if workstation?
       = javascript_include_tag 'application-workstation'
-      = javascript_include_tag 'jquery.modcoder.excolor'
       = javascript_include_tag 'jquery.checkbox'
       = javascript_include_tag 'jquery.keyboard'
       = javascript_include_tag 'jquery.keyboard.config'
@@ -40,6 +38,7 @@
 
     %style= render :file => 'app/views/layouts/_fonts', :formats => [:css], :content_type => 'text/css' 
     = stylesheet_link_tag 'generic', :media => 'screen'
+    = stylesheet_link_tag 'colpick', :media => 'screen'
     - if mobile?
       = stylesheet_link_tag('mobile', :media => 'screen')
     - if workstation?
@@ -85,7 +84,7 @@
           = SalorHospitality::Application::VERSION
           == | #{Company.model_name.human}: #{ @current_company.name } | #{Vendor.model_name.human}: #{ @current_vendor.name } | #{User.model_name.human}: #{ @current_user.login if @current_user }
         .right
-          &copy; 2012 Red (E) Tools Ltd. (red-e.eu)
+          &copy; 2012 Red (E) Tools Ltd. (thebigrede.net)
           = image_tag 'red-e-tiny.png', :class => 'logo_red_e'
     %audio#audio{ :src=>"/alert.wav" }
     = form_tag @sessionpath, :id => 'logoutform', :method => 'delete' do

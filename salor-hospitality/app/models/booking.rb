@@ -7,7 +7,7 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 class Booking < ActiveRecord::Base
-  attr_accessible :company_id, :customer_id, :hidden, :note, :paid, :sum, :vendor_id, :room_id, :user_id, :season_id, :booking_items_to_json, :taxes, :change_given, :from_date, :to_date, :duration, :tax_sum
+  #attr_accessible :company_id, :customer_id, :hidden, :note, :paid, :sum, :vendor_id, :room_id, :user_id, :season_id, :booking_items_to_json, :taxes, :change_given, :from_date, :to_date, :duration, :tax_sum
   include Scope
   has_many :booking_items
   has_many :payment_method_items
@@ -21,7 +21,7 @@ class Booking < ActiveRecord::Base
   belongs_to :customer
 
   serialize :taxes
-  attr_accessible :customer_name
+  #attr_accessible :customer_name
   
   def as_json(options={})
     return {
@@ -81,7 +81,15 @@ class Booking < ActiveRecord::Base
     booking.user = user
     booking.vendor = vendor
     booking.company = vendor.company
-    booking.update_attributes params[:model]
+    
+    permitted = params.require(:model).permit :room_id,
+       :duration,
+       :from_date,
+       :to_date,
+       :id,
+       :hidden
+    
+    booking.update_attributes permitted
     params[:items].to_a.each do |item_params|
       booking.create_new_item(item_params)
     end
@@ -96,7 +104,14 @@ class Booking < ActiveRecord::Base
   end
 
   def update_from_params(params, user)
-    self.update_attributes params[:model]
+    permitted = params.require(:model).permit :room_id,
+       :duration,
+       :from_date,
+       :to_date,
+       :id,
+       :hidden
+    
+    self.update_attributes permitted
     params[:items].to_a.each do |item_params|
       item_id = item_params[1][:id]
       if item_id
@@ -114,13 +129,25 @@ class Booking < ActiveRecord::Base
   end
   
   def create_new_item(p)
-    i = BookingItem.new(p[1])
-    i.ui_id = p[0]
+    key = p[0]
+    params = ActionController::Parameters.new(p[1])
+    i = BookingItem.new
+    permitted = params.permit :count,
+        :guest_type_id,
+        :duration,
+        :season_id,
+        :from_date,
+        :to_date,
+        :base_price,
+        :count,
+        :hidden
+    i.update_attributes permitted
+    i.ui_id = key
     i.room_id = self.room_id
     i.booking = self
     i.vendor = vendor
     i.company = vendor.company
-    i.save
+    i.save!
     i.update_surcharge_items_from_ids p[1][:surchargeslist]
     i.surcharge_items.each do |si|
       si.calculate_totals
@@ -130,10 +157,20 @@ class Booking < ActiveRecord::Base
   end
   
   def update_item(id, p)
-    p[1].delete(:id)
+    key = p[0]
+    params = ActionController::Parameters.new(p[1])
     i = BookingItem.find_by_id(id)
-    i.update_attributes(p[1])
-    i.update_attribute :ui_id, p[0]
+    permitted = params.permit :count,
+        :guest_type_id,
+        :duration,
+        :season_id,
+        :from_date,
+        :to_date,
+        :base_price,
+        :count,
+        :hidden
+    i.update_attributes permitted
+    i.update_attribute :ui_id, key
     i.update_surcharge_items_from_ids p[1][:surchargeslist]
     i.surcharge_items.existing.each { |si| si.calculate_totals }
     i.calculate_totals
@@ -146,7 +183,14 @@ class Booking < ActiveRecord::Base
       params['payment_method_items'][params['id']].to_a.each do |pm|
         if pm[1]['amount'].to_f > 0 and pm[1]['_delete'].to_s == 'false'
           payment_method = self.vendor.payment_methods.existing.find_by_id(pm[1]['id'])
-          PaymentMethodItem.create :payment_method_id => pm[1]['id'], :amount => pm[1]['amount'], :booking_id => self.id, :vendor_id => self.vendor_id, :company_id => self.company_id, :cash => payment_method.cash
+          PaymentMethodItem.create(
+            :payment_method_id => pm[1]['id'],
+            :amount => pm[1]['amount'],
+            :booking_id => self.id,
+            :vendor_id => self.vendor_id,
+            :company_id => self.company_id,
+            :cash => payment_method.cash
+          )
         end
       end
     end
@@ -157,19 +201,32 @@ class Booking < ActiveRecord::Base
     
     # create a default cash payment method item if none was set in the UI
     unless self.payment_method_items.existing.any?
-      cash_payment_methods = self.vendor.payment_methods.existing.where(:cash => true)
-      cash_payment_method = cash_payment_methods.first
+      cash_payment_method = self.vendor.payment_methods.existing.where(:cash => true).first
       if cash_payment_method
-        PaymentMethodItem.create :company_id => self.company_id, :vendor_id => self.vendor_id, :booking_id => self.id, :payment_method_id => cash_payment_method.id , :cash => true, :amount => self.sum
+        PaymentMethodItem.create(
+          :company_id => self.company_id,
+          :vendor_id => self.vendor_id,
+          :booking_id => self.id,
+          :payment_method_id => cash_payment_method.id,
+          :cash => true,
+          :amount => self.sum
+        )
       end
     end
     
     payment_method_sum = self.payment_method_items.existing.sum(:amount) # refunded is never true at this point
     
     # create a change payment method item
-    unless self.payment_method_items.existing.where(:change => true).any?
-      change_payment_methods = self.vendor.payment_methods.where(:change => true)
-      PaymentMethodItem.create :company_id => self.company_id, :vendor_id => self.vendor_id, :booking_id => self.id, :change => true, :amount => (payment_method_sum - self.sum).round(2), :payment_method_id => change_payment_methods.first.id
+    change_payment_method = self.vendor.payment_methods.existing.where(:change => true).first
+    if change_payment_method
+      PaymentMethodItem.create(
+        :company_id => self.company_id,
+        :vendor_id => self.vendor_id,
+        :booking_id => self.id,
+        :change => true,
+        :amount => (payment_method_sum - self.sum).round(2),
+        :payment_method_id => change_payment_method.id
+      )
     end
     
     self.change_given = (payment_method_sum - self.sum).round(2)
@@ -195,14 +252,34 @@ class Booking < ActiveRecord::Base
     self.booking_items.existing.each do |i|
       d = i.booking_item_id ? "x#{i.id}" : "i#{i.id}"
       parent_key = i.booking_item_id ? "i#{i.booking_item_id}" : nil
-      surcharges = self.vendor.surcharges.where(:season_id => i.season_id, :guest_type_id => i.guest_type_id)
+      surcharges = self.vendor.surcharges.where(
+        :season_id => i.season_id,
+        :guest_type_id => i.guest_type_id
+      )
       surcharges_hash = {}
       surcharges.each do |s|
         booking_item_surcharges = i.surcharge_items.existing.collect { |si| si.surcharge }
         selected = booking_item_surcharges.include?(s) and s.amount > 0
-        surcharges_hash.merge! s.name => { :id => s.id, :amount => s.amount, :radio_select => s.radio_select, :selected => selected }
+        surcharges_hash.merge! s.name => {
+          :id => s.id,
+          :amount => s.amount,
+          :radio_select => s.radio_select,
+          :selected => selected
+        }
       end
-      booking_items_hash.merge! d => { :id => i.id, :base_price => i.base_price, :count => i.count, :guest_type_id => i.guest_type_id, :from_date => i.from_date.strftime('%Y-%m-%d'), :to_date => i.to_date.strftime('%Y-%m-%d'), :date_locked => i.date_locked, :duration => i.duration, :season_id => i.season_id, :parent_key => parent_key, :surcharges => surcharges_hash }
+      booking_items_hash.merge! d => {
+        :id => i.id,
+        :base_price => i.base_price,
+        :count => i.count,
+        :guest_type_id => i.guest_type_id,
+        :from_date => i.from_date.strftime('%Y-%m-%d'),
+        :to_date => i.to_date.strftime('%Y-%m-%d'),
+        :date_locked => i.date_locked,
+        :duration => i.duration,
+        :season_id => i.season_id,
+        :parent_key => parent_key,
+        :surcharges => surcharges_hash
+      }
     end
     return booking_items_hash.to_json
   end

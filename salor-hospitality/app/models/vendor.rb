@@ -65,6 +65,7 @@ class Vendor < ActiveRecord::Base
   validates :update_item_lists_interval, :numericality => { :greater_than => 29 }
   validates :update_resources_interval, :numericality => { :greater_than => 101 }
   validates :automatic_printing_interval, :numericality => { :greater_than => 20 }
+  validate :public_holidays_formatting_valid
   
   after_commit :sanitize_vendor_printer_paths
   
@@ -74,6 +75,21 @@ class Vendor < ActiveRecord::Base
   accepts_nested_attributes_for :vendor_printers, :allow_destroy => true, :reject_if => proc { |attrs| attrs['name'] == '' }
 
   accepts_nested_attributes_for :images, :allow_destroy => true, :reject_if => :all_blank
+  
+    
+  def public_holidays_formatting_valid
+    return if self.public_holidays.blank?
+    
+    lines = self.public_holidays.split("\n")
+    lines.each do |l|
+      stripped_line = l.strip
+      next if l.blank?
+      if /^\d\d\d\d-\d\d-\d\d$/.match(stripped_line).nil?
+        errors.add :public_holidays, I18n.t("activerecord.errors.messages.invalid_iso_date_formatting")
+        return
+      end
+    end
+  end
   
   def identifer_present_and_ascii
     if self.identifier.blank?
@@ -100,6 +116,10 @@ class Vendor < ActiveRecord::Base
   def total_utc_offset_hours
     # The additional offset of the store location
     utc_offset_hours +  self.time_offset
+  end
+  
+  def existing_tables
+    self.tables.existing
   end
   
   def sanitize_vendor_printer_paths
@@ -142,6 +162,16 @@ class Vendor < ActiveRecord::Base
     end
   end
 
+  def public_holidays_array
+    return nil if self.public_holidays.blank?
+    array = self.public_holidays.split("\n").collect do |l|
+      l.strip
+    end
+    array.delete("")
+    array.delete(nil)
+    return array.sort
+  end
+  
   def get_unique_model_number(model_name_singular)
     model_name_plural = model_name_singular + 's'
     return 0 if not self.send("use_#{model_name_singular}_numbers")
@@ -211,13 +241,27 @@ class Vendor < ActiveRecord::Base
     cstmers[:all] = {}
     customer_models.each do |c|
       cuid = c.id
-      cstmers[:all][cuid] = { :id => cuid, :n => c.full_name(true) }
+      cstmers[:all][cuid] = {
+        :id => cuid,
+        :n => c.full_name(true)
+      }
     end
     
     quantities = {}
     quantity_models.each do |q|
       ai = q.article_id
-      qhash = {q.id => { :ai => ai, :qi => q.id, :ci => q.category_id, :d => "q#{q.id}", :pre => q.prefix, :post => q.postfix, :p => q.price }}
+      qhash = {
+        q.id => {
+                 :ai => ai,
+                 :qi => q.id,
+                 :ci => q.category_id,
+                 :d => "q#{q.id}",
+                 :sku => q.sku,
+                 :pre => q.prefix,
+                 :post => q.postfix,
+                 :p => q.price
+                }
+      }
       quantities.merge! qhash
     end
 
@@ -227,7 +271,17 @@ class Vendor < ActiveRecord::Base
       aid = a.id
       s = a.position.to_i
       quantity_ids = a.quantities.existing.active.positioned.collect{|q| q.id}
-      ahash = {a.id => { :ai => aid, :ci => ci, :d => "a#{aid}", :n => a.name, :p => a.price, :q => quantity_ids }}
+      ahash = {
+        a.id => {
+                 :ai => aid,
+                 :sku => a.sku,
+                 :ci => ci,
+                 :d => "a#{aid}",
+                 :n => a.name,
+                 :p => a.price,
+                 :q => quantity_ids
+                }
+      }
       articles.merge! ahash
     end
 
@@ -236,7 +290,14 @@ class Vendor < ActiveRecord::Base
       o.categories.each do |oc|
         ci = oc.id
         s = o.position.to_i
-        ohash = {o.id => { :id => o.id, :n => o.name, :p => o.price, :s => s }}
+        ohash = {
+          o.id => {
+                   :id => o.id,
+                   :n => o.name,
+                   :p => o.price,
+                   :s => s
+                  }
+        }
         options.merge! ohash
       end
     end
@@ -247,47 +308,111 @@ class Vendor < ActiveRecord::Base
       s = c.position.to_i
       article_ids = c.articles.existing.active.positioned.collect{ |a| a.id }
       option_ids = c.options.existing.active.positioned.collect{ |o| o.id }
-      chash = {cid => { :id => cid, :a => article_ids, :o => option_ids, :n => c.name }}
+      chash = {
+        cid => {
+                :id => cid,
+                :a => article_ids,
+                :o => option_ids,
+                :n => c.name
+               }
+      }
       categories.merge! chash
     end
 
     payment_methods = {}
     payment_method_models.each do |pm|
       pmid = pm.id
-      payment_methods[pm.id] = { :id => pmid, :n => pm.name, :chg => pm.change }
+      payment_methods[pm.id] = {
+        :id => pmid,
+        :n => pm.name,
+        :chg => pm.change
+      }
     end
     
     tables = {}
     table_models.each do |t|
       tid = t.id
-      tables[tid] = { :id => tid, :n => t.name }
+      tables[tid] = {
+        :id => tid,
+        :n => t.name
+      }
     end
     
     users = {}
     user_models.each do |u|
       uid = u.id
-      users[uid] = { :id => uid, :n => u.login, :c => u.color }
+      users[uid] = {
+        :id => uid,
+        :n => u.login,
+        :c => u.color
+      }
     end
 
     rooms = Hash.new
-    self.rooms.existing.active.each { |r| rooms[r.id] = { :n => r.name, :rt => r.room_type_id, :bks => r.bookings.existing.where(:finished => nil, :paid => nil).each.inject([]) {|ar,b| ar.push({:f => b.from_date, :t => b.to_date, :cid => b.customer_id, :d => b.duration } ) } } }
+    self.rooms.existing.active.each do |r|
+      bookings = r.bookings.existing.where(:finished => nil, :paid => nil).each.inject([]) do |ar,b|
+        ar.push({
+                 :f => b.from_date,
+                 :t => b.to_date,
+                 :cid => b.customer_id,
+                 :d => b.duration
+                })
+      end
+      rooms[r.id] = {
+        :n => r.name,
+        :rt => r.room_type_id,
+        :bks => bookings
+      }
+    end
 
     room_types = Hash.new
     self.room_types.existing.active.each { |rt| room_types[rt.id] = { :n => rt.name } }
 
     room_prices = Hash.new
-    self.room_prices.existing.active.each { |rp| room_prices[rp.id] = { :rt => rp.room_type_id, :gt => rp.guest_type_id, :p => rp.base_price, :sn => rp.season_id } }
+    self.room_prices.existing.active.each do |rp|
+      room_prices[rp.id] = { 
+        :rt => rp.room_type_id,
+        :gt => rp.guest_type_id,
+        :p => rp.base_price,
+        :sn => rp.season_id
+      }
+    end
 
     guest_types = Hash.new
-    self.guest_types.existing.active.each { |gt| guest_types[gt.id] = { :n => gt.name, :t => gt.taxes.collect{ |t| t.id } }}
+    self.guest_types.existing.active.each do |gt|
+      guest_types[gt.id] = {
+        :n => gt.name,
+        :t => gt.taxes.collect { |t| t.id }
+      }
+    end
 
     surcharges = Hash.new
-    self.surcharges.existing.active.each { |sc| surcharges[sc.id] = { :n => sc.name, :a => sc.amount, :sn => sc.season_id, :gt => sc.guest_type_id, :r => sc.radio_select, :v => sc.visible, :s => sc.selected } }
+    self.surcharges.existing.active.each do |sc|
+      surcharges[sc.id] = {
+        :n => sc.name,
+        :a => sc.amount,
+        :sn => sc.season_id,
+        :gt => sc.guest_type_id,
+        :r => sc.radio_select,
+        :v => sc.visible,
+        :s => sc.selected }
+    end
 
     seasons = Hash.new
     current_season = Season.current(self)
     current_year = Time.now.year
-    self.seasons.existing.active.each { |sn| seasons[sn.id] = { :id => sn.id, :is_master => sn.is_master,:n => sn.name, :f => "#{current_year}-#{sn.from_date.strftime('%m-%d')}", :t => "#{current_year}-#{sn.to_date.strftime('%m-%d')}", :c => sn == current_season, :d => sn.duration, :c => sn.color } }
+    self.seasons.existing.active.each do |sn|
+      seasons[sn.id] = {
+        :id => sn.id,
+        :is_master => sn.is_master,
+        :n => sn.name,
+        :f => "#{current_year}-#{sn.from_date.strftime('%m-%d')}",
+        :t => "#{current_year}-#{sn.to_date.strftime('%m-%d')}",
+        :c => sn == current_season,
+        :d => sn.duration,
+        :c => sn.color
+      }
+    end
 
     taxes = Hash.new
     self.taxes.existing.each { |t| taxes[t.id] = { :n => t.name, :p => t.percent } }
@@ -296,7 +421,25 @@ class Vendor < ActiveRecord::Base
       :item => raw(ActionView::Base.new(File.join(Rails.root,'app','views')).render(:partial => 'items/item_tablerow'))
     }
 
-    resources = { :a => articles, :q => quantities, :o => options, :c => categories, :templates => templates, :customers => cstmers, :r => rooms, :rt => room_types, :rp => room_prices, :gt => guest_types, :sc => surcharges, :sn => seasons, :t => taxes, :pm => payment_methods, :u => users, :tb => tables, :vp => self.vendor_printers_hash }
+    resources = {
+      :a => articles,
+      :q => quantities,
+      :o => options,
+      :c => categories,
+      :templates => templates,
+      :customers => cstmers,
+      :r => rooms,
+      :rt => room_types,
+      :rp => room_prices,
+      :gt => guest_types,
+      :sc => surcharges,
+      :sn => seasons,
+      :t => taxes,
+      :pm => payment_methods,
+      :u => users,
+      :tb => tables,
+      :vp => self.vendor_printers_hash
+    }
 
     return resources.to_json
   end
@@ -315,11 +458,10 @@ class Vendor < ActiveRecord::Base
     case model
     when 'Item'
       items = self.items.where(:created_at => from..to)
-      #attributes = "id;count;article_id;quantity_id;order_id;order_nr;created_at;updated_at;price;max_count;min_count;user_id;hidden;hidden_at;hidden_by;category_id;tax_sum;refunded;refund_sum;refunded_by;settlement_id;cost_center_id;taxes"
       attributes = "id;hidden;hidden_at;hidden_by;order.nr;created_at;updated_at;order.table.name;order.user.login;order.nr;label;category.name;count;max_count;min_count;price_with_options;article.taxes.first.percent;tax_sum;refunded;refund_sum;refunded_by;settlement.nr;cost_center_id;"
       output = ''
       output += "#{attributes}\n"
-      output += Report.to_csv(items, Item, attributes)
+      output += Vendor.to_csv(items, Item, attributes)
     else
       output = nil
     end
@@ -351,7 +493,7 @@ class Vendor < ActiveRecord::Base
     
 
     # GENERATE CSV FILES
-    Report.dump_all(from, to, dumppath)
+    self.dump_all(from, to, dumppath)
     
     # ZIP IT UP
     zip_outfile = "#{ location }/#{ label }.zip"
@@ -399,7 +541,12 @@ class Vendor < ActiveRecord::Base
         print_engine.open
         bytes_written, content_sent = print_engine.print(vendor_printers.first.id, output)
         bytes_sent = content_sent.length
-        Receipt.create(:vendor_id => self.id, :company_id => self.company_id, :vendor_printer_id => vendor_printers.first.id, :content => output, :bytes_sent => bytes_sent, :bytes_written => bytes_written)
+        Receipt.create :vendor_id => self.id,
+            :company_id => self.company_id,
+            :vendor_printer_id => vendor_printers.first.id,
+            :content => output,
+            :bytes_sent => bytes_sent,
+            :bytes_written => bytes_written
         print_engine.close
       end
     end
@@ -418,78 +565,6 @@ class Vendor < ActiveRecord::Base
   
   def region
     SalorHospitality::Application::COUNTRIES_REGIONS[self.country]
-  end
-  
-  def self.copy_menucard(v1, v2)
-    # copies taxes, categories, articles, quantities
-    v1.taxes.existing.each do |t1|
-      t2 = Tax.new
-      t2.company_id = t1.company_id
-      t2.vendor_id = v2.id
-      t2.percent = t1.percent
-      t2.name = t1.name
-      t2.letter = t1.letter
-      t2.color = t1.color
-      t2.statistics_by_category = t1.statistics_by_category
-      t2.include_in_statistics = t1.include_in_statistics
-      t2.save
-    end
-    
-    messages = []
-    v1.categories.existing.each do |c1|
-      c2 = Category.new
-      c2.vendor_id = v2.id
-      c2.company_id = v1.company_id
-      c2.name = c1.name
-      c2.icon = c1.icon
-      c2.color = c1.color
-      c2.position = c1.position
-      c2.active = c1.active
-      c2.separate_print = c1.separate_print
-      c2.save
-      
-      c1.articles.existing.each do |a1|
-        a2 = Article.new
-        a2.company_id = a1.company_id
-        a2.vendor_id = v2.id
-        a2.name = a1.name
-        a2.description = a1.description
-        a2.category_id = c2.id
-        a2.price = a1.price
-        a2.active = a1.active
-        a2.waiterpad = a1.waiterpad
-        a2.sort = a1.sort
-        a2.position = a1.position
-
-        a1.taxes.existing.each do |t1|
-          percent = t1.percent
-          t2 = v2.taxes.find_by_percent(percent)
-          a2.taxes << t2
-        end
-        
-        a1.quantities.existing.each do |q1|
-          q2 = Quantity.new
-          q2.company_id = q1.company_id
-          q2.vendor_id = v2.id
-          #q2.article_id = a2.id
-          q2.prefix = q1.prefix
-          q2.postfix = q1.postfix
-          q2.price = q1.price
-          q2.active = q1.active
-          q2.sort = q1.sort
-          q2.position = q1.position
-          q2.category_id = c2.id
-          q2.article_name = q1.article_name
-          q2.save
-          a2.quantities << q2
-        end # quantities
-        
-        result = a2.save
-        if result == false
-          messages << a2.errors
-        end        
-      end # articles
-    end #category
   end
   
   def identifier
@@ -514,7 +589,177 @@ class Vendor < ActiveRecord::Base
     ActiveRecord::Base.logger.info "Set hash_id to #{ self.hash_id }."
   end
   
+  def dump_all(from, to, device)
+    tfrom = from.strftime("%Y%m%d")
+    tto = to.strftime("%Y%m%d")
+    
+    items = self.items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityItems#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;count;article_id;order_id;created_at;updated_at;quantity_id;price;max_count;min_count;user_id;hidden;hidden_at;hidden_by;category_id;tax_sum;refunded;refund_sum;refunded_by;settlement_id;cost_center_id;taxes"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(items, Item, attributes)
+    end
+    
+    booking_items = self.booking_items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityBookingItems#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;booking_id;guest_type_id;sum;created_at;updated_at;count;base_price;refund_sum;taxes;from_date;to_date;season_id;duration;booking_item_id;ui_parent_id;ui_id;unit_sum;room_id;date_locked;tax_sum;hidden;hidden_at;hidden_by"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(booking_items, BookingItem, attributes)
+    end
+    
+    surcharge_items = self.surcharge_items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalitySurchargeItems#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;surcharge_id;booking_item_id;amount;season_id;guest_type_id;taxes;sum;duration;count;from_date;to_date;tax_sum;booking_id;hidden;hidden_at;hidden_by;created_at;updated_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(surcharge_items, SurchargeItem, attributes)
+    end
+    
+    bookings = self.bookings.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityBookings#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;from_date;to_date;customer_id;sum;paid;note;created_at;updated_at;room_id;finished;user_id;refund_sum;nr;change_given;duration;taxes;booking_item_sum;finished_at;paid_at;tax_sum;hidden;hidden_at;hidden_by"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(bookings, Booking, attributes)
+    end
+    
+    orders = self.orders.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityOrders#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;finished;table_id;user_id;settlement_id;created_at;updated_at;sum;cost_center_id;printed_from;nr;tax_id;refund_sum;note;customer_id;hidden;hidden_at;hidden_by;printed;paid;booking_id;taxes;finished_at;paid_at;reactivated;reactivated_by;reactivated_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(orders, Order, attributes)
+    end
+    
+    taxes = self.taxes
+    File.open("#{device}/SalorHospitalityTaxes#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;percent;name;created_at;updated_at;letter;hidden;hidden_by;hidden_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(taxes, Tax, attributes)
+    end
+    
+    option_items = self.option_items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityOptionItem#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;option_id;item_id;order_id;price;name;count;sum;created_at;updated_at;no_ticket;separate_ticket;hidden;hidden_by;hidden_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(option_items, OptionItem, attributes)
+    end
+    
+    tax_items = self.tax_items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityTaxItem#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;tax_id;item_id;booking_item_id;order_id;booking_id;settlement_id;gro;net;tax;created_at;updated_at;letter;surcharge_item_id;name;percent;hidden;hidden_by;hidden_at;refunded;cost_center_id;category_id"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(tax_items, TaxItem, attributes)
+    end
+    
+    pmis = self.payment_method_items.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityPaymentMethodItems#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;payment_method_id;order_id;amount;created_at;updated_at;booking_id;refunded;cash;refund_item_id;settlement_id;cost_center_id;change;hidden;hidden_by;hidden_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(pmis, PaymentMethodItem, attributes)
+    end
+    
+    settlements = self.settlements.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalitySettlements#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;nr;revenue;user_id;created_at;updated_at;finished;initial_cash;sum;hidden;hidden_by;hidden_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(settlements, Settlement, attributes)
+    end
+    
+    options = self.options
+    File.open("#{device}/SalorHospitalityOptions#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;name;price;created_at;updated_at;hidden;hidden_by;hidden_at;active;separate_ticket;no_ticket"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(options, Option, attributes)
+    end
+    
+    articles = self.articles
+    File.open("#{device}/SalorHospitalityArticles#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;name;description;category_id;price;active;created_at;updated_at;hidden;hidden_at;hidden_by"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(articles, Article, attributes)
+    end
+    
+    quantities = self.quantities
+    File.open("#{device}/SalorHospitalityQuantities#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;prefix;postfix;price;article_id;created_at;updated_at;active;hidden;hidden_by;hidden_at;category_id;article_name"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(quantities, Quantity, attributes)
+    end
+    
+    users = self.users
+    File.open("#{device}/SalorHospitalityUsers#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;login;title;created_at;updated_at;role_id;active;hidden;hidden_at;hidden_by;last_active_at;last_login_at;last_logout_at;email"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(users, User, attributes)
+    end
+    
+    cost_centers = self.cost_centers
+    File.open("#{device}/SalorHospitalityCostCenters#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;name;description;created_at;updated_at;hidden;hidden_by;hidden_at;no_payment_methods"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(cost_centers, CostCenter, attributes)
+    end
+    
+    
+    payment_methods = self.payment_methods
+    File.open("#{device}/SalorHospitalityPaymentMethods#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;name;created_at;updated_at;hidden;hidden_by;hidden_at;cash;change"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(payment_methods, PaymentMethod, attributes)
+    end
+    
+    
+    histories = self.histories.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityHistories#{tfrom}-#{tto}.csv","w") do |f|
+      attributes = "id;url;user_id;action_taken;model_type;model_id;ip;changes_made;params;created_at;updated_at"
+      f.write("#{attributes}\n")
+      f.write Vendor.to_csv(histories, History, attributes)
+    end
+    
+    receipts = self.receipts.where(:created_at => from..to)
+    File.open("#{device}/SalorHospitalityReceipts#{tfrom}-#{tto}.txt","w:ASCII-8BIT") do |f|
+      receipts.each do |r|
+        string = "\n\nReceipt id:%i, user_id:%i, vendor_printer_id:%i, order_id:%i, order_nr:%i, created_at:%s\n\n" % [r.id, r.user_id.to_i, r.vendor_printer_id.to_i, r.order_id.to_i, r.order_nr.to_i, r.created_at]
+        f.write string
+        f.write r.content.gsub("\e@\e!8\n", "").gsub("\x1DV\x00\ep\x00\x99\x99\f".force_encoding('ASCII-8BIT'), "")
+      end
+    end
+    
+    # Missing models for report, but not critical: Room, RoomType, RoomPrice, GuestType, Surcharge, Season
+  end
+  
   private
+  
+  def Vendor.to_csv(objects, klass, attributes)
+    attrs = attributes.split(";")
+    formatstring = ""
+    attrs.each do |a|
+      #puts "ATTR #{ klass.to_s}: #{ a }"
+      cls = klass.columns_hash[a].type if klass.columns_hash[a]
+      case cls
+      when :integer
+        formatstring += "%i;"
+      when :datetime, :string, :boolean, :text
+        formatstring += "%s;"
+      when :float
+        formatstring += "%.2f;"
+      else
+        formatstring += "%s;"
+      end
+    end
+    lines = []
+    objects.each do |item|
+      values = []
+      attrs.size.times do |j|
+        val = attrs[j].split('.').inject(item) do |klass, method|
+          klass.send(method) unless klass.nil?
+        end
+        val = 0 if val.nil?
+        values << val
+      end
+      lines << sprintf(formatstring, *values)
+    end
+    
+    return lines.join("\n")
+  end
   
   def generate_random_string
     collection = [('a'..'z'),('A'..'Z'),('0'..'9')].map{|i| i.to_a}.flatten

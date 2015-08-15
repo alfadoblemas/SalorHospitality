@@ -82,6 +82,7 @@ nl:
         finished_at: Finished at
         nr: Nummer
         sum: Sum
+        tax_sum: Taxes
       page:
         active: actief
         color: Kleur
@@ -116,7 +117,9 @@ nl:
         price: Prijs
         usage: gebruik
       role:
+        hidden: delete
         name: Naam
+        weight: Level
       room_price:
         base_price: Basis Prijs
         guest_type_id: Gast Type
@@ -217,6 +220,7 @@ nl:
         technician_email: e-mail Technicus
         ticket_display_time_order: Tijd en factuurnummer op bon
         ticket_item_separator: Bon scheidingslijn
+        ticket_space_top: Tickets space top
         ticket_tall_font: Bon lang letertype
         ticket_wide_font: Bon breed lettertype
         time_offset: Tijd correctie (uren)
@@ -229,6 +233,7 @@ nl:
         baudrate: Baudrate
         codepage: Code pagina
         copies: Kopieen
+        cut_every_ticket: Cut every ticket
         hidden: Verwijder
         name: Naam
         path: Pad
@@ -236,9 +241,14 @@ nl:
         pulse_receipt: Ontvangstbewijs signaal
         pulse_tickets: Bon signaal
         ticket_ad: Ticket Ad.
+        one_ticket_per_piece: One ticket per piece
     errors:
       messages:
+        dont_use_weird_skus: may only contain letters A-Z and a-z and numbers from
+          0-9
+        invalid_iso_date_formatting: Dates must be entered in the format YYYY-MM-DD
         prefix_or_postfix_must_be_given: Voorvoegsel toevoegsel moet worden gegevens
+        sku_already_taken: has already been taken
     models:
       article:
         one: Artikel
@@ -348,6 +358,9 @@ nl:
       user:
         one: Gebruiker
         other: Gebruikers
+      user_login:
+        one: Work time
+        other: Work times
       vendor:
         one: Verkoper
         other: Verkopers
@@ -394,8 +407,11 @@ nl:
     invoice_item_list:
       served_by_X: U werd geholpen door %{user}
     show:
+      count: Count
       go_to_bookings_calendar: Ga naar boekingen kalenderweergave
       search_by_number: Zoeken op nummer
+      sum: Sum
+      unit_price: Unit price
   cameras:
     create:
       success: Camera werd succesvol opgeslagen
@@ -495,10 +511,12 @@ nl:
   kitchen: Keuken
   layouts:
     application:
-      admin_menu_hint: ☚ Klik hier om het hoofdmenu te openen
+      admin_menu_hint: "☚ Klik hier om het hoofdmenu te openen"
       submit_scribe: OK
     header:
-      configuration: Configuratie
+      settings_common: General
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: uitloggen %{who}
   messages:
     hello_username: Hallo %{name}!
@@ -599,7 +617,7 @@ nl:
       new_page: Nieuwe Pagina
   partials:
     default_blurb: Bewerk me
-    error_during_evaluation: ! 'Fout: '
+    error_during_evaluation: 'Fout: '
     no_presentation_found:
       no_presentations_found: Geen sjabloon gedefinieerd voor deze partial.
   payment_methods:
@@ -663,6 +681,7 @@ nl:
       download_csv: Download CSV
       download_database: Download Database
       edit_role: Bewerk Rol
+      enter_payment_methods: Enter Payment Methods
       finish_all_settlements: Beeindig alle overeenstemmingen
       finish_orders: Beeindig bestellingen
       finish_own_settlement: Beeindig eigen overeenkomst
@@ -713,20 +732,20 @@ nl:
       split_items: Verdeel artikelen
       statistics:
         statistics_category: Categorieën
-        statistics_hour: Uren
         statistics_payment_method: Betalingsmethoden
         statistics_sold_quantities: Verkochte hoeveelheden
         statistics_statistic_category: Statistiek Categorieën
         statistics_table: Tabellen
         statistics_tax: Belastingen
+        statistics_user: Users
         statistics_weekday: Weekdagen
       statistics_category: Statistieken toon Categorieën
-      statistics_hour: Statistieken toon Uren
       statistics_payment_method: Statistieken toon Betalingsmethoden
       statistics_sold_quantities: Statistieken toon verkochte hoeveelheden
       statistics_statistic_category: Statistieken toon statistiek categorieën
       statistics_table: Statistieken toon Tabellen
       statistics_tax: Statistieken toon belastingen
+      statistics_user: Statistics show Users
       statistics_weekday: Statistieken toon Weekdagen
       take_orders: Neem bestelloing op
       view_all_settlements: Bekijk alle akkoorden
@@ -751,6 +770,7 @@ nl:
       new_room: Nieuwe kamer
   scopes:
     active: Actief
+    inactive: Inactive
     waiterpad: Kelner notitieblok
   scroll_down: scroll naar beneden
   scroll_to_area: Ga naar kamer
@@ -781,10 +801,9 @@ nl:
       username: Gebruiker
   settlements:
     detailed_list:
-      changed_price: ! '%{byuser} heeft prijs veranderd'
+      changed_price: "%{byuser} heeft prijs veranderd"
       count: Count
-      order_number_on_table_on_date: ! '%{order} nummer %{number} aan %{table} om
-        %{time}'
+      order_number_on_table_on_date: "%{order} nummer %{number} aan %{table} om %{time}"
       reduced_count: Aantal verminderd %{maxcount} naar %{count}.
       revenue: inkomsten
       total: Totaal
@@ -817,6 +836,17 @@ nl:
       limit_by: Beperken
       query: Vraag
       weekday: Weekdag
+    statistics_sold_quantities:
+      article_name: Article name
+      category: Category
+      count: Sales count
+      quantity_name: Quantity name
+      sort_by: Sort by
+      sum: Revenue
+      tax: Tax
+    statistics_weekday:
+      public_holidays: Public holidays
+      weekday: Weekday
   stocks:
     new:
       edit_stock: Bewerk voorraad
@@ -854,6 +884,7 @@ nl:
       new_user: Nieuwe Gebruiker
       select_with_ctrl_key: Selecteer of deselecteer met [Ctrl] + linker muisknop
   various:
+    already_finished_warning: This order has already been completed by someone else.
     attempt: Poging
     begin: Begin
     cancel: Annuleren
@@ -866,15 +897,15 @@ nl:
     customer_request_waiter: Vraag om een kelner
     delete: Verwijderen
     display: Tonen
-    double_submission_warning: ! 'Warning: Double submission. Please inform tech support
+    double_submission_warning: 'Warning: Double submission. Please inform tech support
       about this.'
     download: Downloaden
     end: End
     exception_page:
       assistance_text: Klik dan op de "HOME" knop en probeer het opnieuw.Als de fout
         weer optreedt, neem dan a.u.b. contact op met Customer Support..
-      exception_description: ! 'Fout Omschrijving:'
-      exception_in_files: ! 'De fout is opgetreden in de volgende bestanden:'
+      exception_description: 'Fout Omschrijving:'
+      exception_in_files: 'De fout is opgetreden in de volgende bestanden:'
       oops_an_error_occurred: Oeps! Er is een fout opgetreden
     finish_was_requested: You have requested payment. Please have a little patience,
       we will be there for your shortly.
@@ -929,7 +960,7 @@ nl:
     form:
       add_printer: Voeg printer toe
       identify_printers: Identificeer Printers
-      print_via_salorbin_explanation: ! 'Als u wilt afdrukken via desalor-bin browser,
+      print_via_salorbin_explanation: 'Als u wilt afdrukken via desalor-bin browser,
         Kopieer en plak de volgende gegevens in het opties dialoogvenster van salor-bin:'
       test_printers: Test Printers
       test_printers_chartest: Test alle karakters

@@ -54,12 +54,18 @@ class TablesController < ApplicationController
   def show
     @table = get_model
     render :nothing => true and return unless @table
-    @orders = @current_vendor.orders.existing.where(:finished => false, :table_id => params[:id])
+
     if params[:order_id] and not params[:order_id].empty?
       # route directly to the order form, even when there are 2 open orders. this is called from the room view, or from the invoice view when going back to the table view
-      @order = @current_vendor.orders.existing.where(:finished => false).find_by_id(params[:order_id])
-      render 'orders/render_order_form' and return
+      @order = @current_vendor.orders.existing.find_by_id(params[:order_id])
+      if @order.finished == true
+        render :js => "order_already_finished();"
+      else
+        render 'orders/render_order_form' and return
+      end
+      
     else
+      @orders = @current_vendor.orders.existing.where(:finished => false, :table_id => params[:id])
       if @orders.size > 1
         render_invoice_form(@table) and return
       else
@@ -75,12 +81,21 @@ class TablesController < ApplicationController
   end
 
   def create
-    if @current_vendor.max_tables and @current_vendor.max_tables < @current_vendor.tables.existing.count
-      flash[:notice] = t('tables.create.license_limited', :count => @current_vendor.max_tables)
-      redirect_to tables_path and return
-    end
     @current_vendor.tables.update_all :booking_table => nil if params[:table][:booking_table] == '1'
-    @table = Table.new(params[:table])
+    
+    permitted = params.require(:table).permit :name,
+        :width,
+        :height,
+        :width_mobile,
+        :height_mobile,
+        :rotate,
+        :booking_table,
+        :customer_table,
+        :enabled,
+        :top,
+        :left
+        
+    @table = Table.new permitted
     @table.vendor = @current_vendor
     @table.company = @current_company
     if @table.save
@@ -105,7 +120,20 @@ class TablesController < ApplicationController
     @table = get_model
     redirect_to tables_path and return unless @table
     @current_vendor.tables.update_all :booking_table => nil if params[:table][:booking_table] == '1'
-    success = @table.update_attributes(params[:table])
+    
+    permitted = params.require(:table).permit :name,
+        :width,
+        :height,
+        :width_mobile,
+        :height_mobile,
+        :rotate,
+        :booking_table,
+        :customer_table,
+        :enabled,
+        :top,
+        :left
+    
+    success = @table.update_attributes permitted
     if success
       flash[:notice] = t('tables.create.success')
       redirect_to tables_path

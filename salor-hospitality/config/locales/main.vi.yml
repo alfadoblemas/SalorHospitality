@@ -82,6 +82,7 @@ vi:
         finished_at: Finished at
         nr: Number
         sum: Sum
+        tax_sum: Taxes
       page:
         active: active
         color: Color
@@ -116,7 +117,9 @@ vi:
         price: Variant Price
         usage: usage
       role:
+        hidden: delete
         name: Name
+        weight: Level
       room_price:
         base_price: Base Price
         guest_type_id: Guest Type
@@ -217,6 +220,7 @@ vi:
         technician_email: Technician e-mail
         ticket_display_time_order: Time and invoice number on ticket
         ticket_item_separator: Ticket Separation Line
+        ticket_space_top: Tickets space top
         ticket_tall_font: Ticket tall font
         ticket_wide_font: Ticket wide font
         time_offset: Time correction (hours)
@@ -229,6 +233,7 @@ vi:
         baudrate: Baudrate
         codepage: Codepage
         copies: Copies
+        cut_every_ticket: Cut every ticket
         hidden: Delete
         name: Name
         path: Path
@@ -236,9 +241,14 @@ vi:
         pulse_receipt: Beep Receipt
         pulse_tickets: Beep Tickets
         ticket_ad: Ticket Ad.
+        one_ticket_per_piece: One ticket per piece
     errors:
       messages:
+        dont_use_weird_skus: may only contain letters A-Z and a-z and numbers from
+          0-9
+        invalid_iso_date_formatting: Dates must be entered in the format YYYY-MM-DD
         prefix_or_postfix_must_be_given: Prefix or Postfix must be given
+        sku_already_taken: has already been taken
     models:
       article:
         one: Article
@@ -348,6 +358,9 @@ vi:
       user:
         one: User
         other: Users
+      user_login:
+        one: Work time
+        other: Work times
       vendor:
         one: Vendor
         other: Vendors
@@ -394,8 +407,11 @@ vi:
     invoice_item_list:
       served_by_X: You were served by %{user}
     show:
+      count: Count
       go_to_bookings_calendar: Go to bookings calendar view
       search_by_number: Search by number
+      sum: Sum
+      unit_price: Unit price
   cameras:
     create:
       success: Camera was successfully saved
@@ -495,10 +511,12 @@ vi:
   kitchen: Kitchen
   layouts:
     application:
-      admin_menu_hint: ☚ Click here to open the main menu
+      admin_menu_hint: "☚ Click here to open the main menu"
       submit_scribe: OK
     header:
-      configuration: Configuration
+      settings_common: General
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: log out %{who}
   messages:
     hello_username: Hello %{name}!
@@ -599,7 +617,7 @@ vi:
       new_page: New Page
   partials:
     default_blurb: edit me
-    error_during_evaluation: ! 'Error: '
+    error_during_evaluation: 'Error: '
     no_presentation_found:
       no_presentations_found: No template defined for this partial.
   payment_methods:
@@ -662,6 +680,7 @@ vi:
       download_csv: Download CSV
       download_database: Download Database
       edit_role: Edit Role
+      enter_payment_methods: Enter Payment Methods
       finish_all_settlements: Finish all settlements
       finish_orders: Finish orders
       finish_own_settlement: Finish own settlement
@@ -711,20 +730,20 @@ vi:
       split_items: Split items
       statistics:
         statistics_category: Categories
-        statistics_hour: Hours
         statistics_payment_method: Payment Methods
         statistics_sold_quantities: Sold quantities
         statistics_statistic_category: Statistic Categories
         statistics_table: Tables
         statistics_tax: Taxes
+        statistics_user: Users
         statistics_weekday: Weekdays
       statistics_category: Statistics show Categories
-      statistics_hour: Statistics show Hours
       statistics_payment_method: Statistics show Payment Methods
       statistics_sold_quantities: Statistics show sold quantities
       statistics_statistic_category: Statistics show StatisticCategories
       statistics_table: Statistics show Tables
       statistics_tax: Statistics show CategoriesTaxes
+      statistics_user: Statistics show Users
       statistics_weekday: Statistics show Weekdays
       take_orders: Take orders
       view_all_settlements: View all settlements
@@ -749,6 +768,7 @@ vi:
       new_room: New Room
   scopes:
     active: Active
+    inactive: Inactive
     waiterpad: Waiterpad
   scroll_down: Scroll down
   scroll_to_area: Go to room
@@ -778,9 +798,9 @@ vi:
       username: User
   settlements:
     detailed_list:
-      changed_price: ! '%{byuser} changed price'
+      changed_price: "%{byuser} changed price"
       count: Count
-      order_number_on_table_on_date: ! '%{order} number %{number} on %{table} at %{time}'
+      order_number_on_table_on_date: "%{order} number %{number} on %{table} at %{time}"
       reduced_count: Count reduced from %{maxcount} to %{count}.
       revenue: Revenue
       total: Total
@@ -812,6 +832,17 @@ vi:
       hour: Hour
       limit_by: Limit by
       query: Query
+      weekday: Weekday
+    statistics_sold_quantities:
+      article_name: Article name
+      category: Category
+      count: Sales count
+      quantity_name: Quantity name
+      sort_by: Sort by
+      sum: Revenue
+      tax: Tax
+    statistics_weekday:
+      public_holidays: Public holidays
       weekday: Weekday
   stocks:
     new:
@@ -850,6 +881,7 @@ vi:
       new_user: New User
       select_with_ctrl_key: Select or deselect with [Ctrl] + Left Mouse Button
   various:
+    already_finished_warning: This order has already been completed by someone else.
     attempt: Attempt
     begin: Begin
     cancel: Cancel
@@ -862,15 +894,15 @@ vi:
     customer_request_waiter: Request waiter
     delete: Delete
     display: Display
-    double_submission_warning: ! 'Warning: Double submission. Please inform tech support
+    double_submission_warning: 'Warning: Double submission. Please inform tech support
       about this.'
     download: Download
     end: End
     exception_page:
       assistance_text: Please click on the Button "HOME" and try again. If you see
         the same error twice, please contact our Customer Support.
-      exception_description: ! 'Error Description:'
-      exception_in_files: ! 'The Error occurred in the following files:'
+      exception_description: 'Error Description:'
+      exception_in_files: 'The Error occurred in the following files:'
       oops_an_error_occurred: Oops! An Error occurred
     finish_was_requested: You have requested payment. Please have a little patience,
       we will be there for your shortly.
@@ -924,7 +956,7 @@ vi:
     form:
       add_printer: Add printer
       identify_printers: Identify Printers
-      print_via_salorbin_explanation: ! 'If you want to print via the salor-bin browser,
+      print_via_salorbin_explanation: 'If you want to print via the salor-bin browser,
         copy and paste the following details to the options dialog of salor-bin:'
       test_printers: Test Printers
       test_printers_chartest: Test all characters

@@ -29,11 +29,32 @@ class UsersController < ApplicationController
 
   def show
     @user = get_model
+    @from, @to = assign_from_to(params)
+    @user_logins = @user.user_logins.where(:created_at => @from..@to)
     redirect_to users_path and return unless @user
   end
 
   def create
-    @user = User.new(params[:user])
+    permitted = params.require(:user).permit :active,
+        :login,
+        :title,
+        :password,
+        :advertising_url,
+        :role_id,
+        :color,
+        :language,
+        :layout,
+        :default_vendor_id,
+        :screenlock_timeout,
+        :maximum_shift_duration,
+        :advertising_timeout,
+        :track_time,
+        :audio,
+        :tables_array => [],
+        :vendors_array => []
+
+        
+    @user = User.new permitted
     unless params[:vendor_array]
       @user.vendors = [@current_vendor]
     end
@@ -89,7 +110,25 @@ class UsersController < ApplicationController
       @user.default_vendor_id = @current_vendor.id
     end
     
-    if @user.update_attributes(params[:user])
+    permitted = params.require(:user).permit :active,
+        :login,
+        :title,
+        :password,
+        :advertising_url,
+        :role_id,
+        :color,
+        :language,
+        :layout,
+        :default_vendor_id,
+        :screenlock_timeout,
+        :maximum_shift_duration,
+        :advertising_timeout,
+        :track_time,
+        :audio,
+        :tables_array => [],
+        :vendors_array => []
+    
+    if @user.update_attributes permitted
       @user.role_weight = @user.role.weight # update
       if @user.role_weight < @current_user.role_weight
         # gracefully prevent RESTful creation of an user with higher privileges than the current user, might be a hacking attempt
@@ -119,6 +158,7 @@ class UsersController < ApplicationController
     @user.hidden = true
     @user.password = "OLD #{ Time.now } #{ @user.password }"
     @user.save
+    
     redirect_to users_path
   end
   
@@ -129,6 +169,10 @@ class UsersController < ApplicationController
   end
   
   private
+  
+#   def record_history
+#     @user.record_history(@user.previous_changes, params[:action], @current_user, @current_vendor, request.ip)
+#   end
   
   def check_role_weight
     @user = get_model

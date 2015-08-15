@@ -82,6 +82,7 @@ gn:
         finished_at: Abgeschlossen am
         nr: Nummer
         sum: Summe
+        tax_sum: Steuern
       page:
         active: aktiv
         color: Hintergrund
@@ -116,7 +117,9 @@ gn:
         price: Preis
         usage: Verwendung
       role:
+        hidden: delete
         name: Name
+        weight: Level
       room_price:
         base_price: Grundpreis
         guest_type_id: Guest Type
@@ -217,6 +220,7 @@ gn:
         technician_email: Techniker E-mail
         ticket_display_time_order: Uhrzeit und Verkaufsnummer auf Ticket
         ticket_item_separator: Ticket Trennlinie
+        ticket_space_top: Tickets Leerzeilen oben
         ticket_tall_font: Ticket hohe Schrift
         ticket_wide_font: Ticket breite Schrift
         time_offset: Zeitkorrektur (Stunden)
@@ -229,8 +233,10 @@ gn:
         baudrate: Baudrate
         codepage: Codepage
         copies: Kopien
+        cut_every_ticket: Jedes Ticket schneiden
         hidden: Löschen
         name: Name
+        one_ticket_per_piece: Ein Ticket per Stück
         path: Pfad
         print_button_filename: Icon
         pulse_receipt: Beep Rechnung
@@ -238,7 +244,10 @@ gn:
         ticket_ad: Ticket Werb.
     errors:
       messages:
+        dont_use_weird_skus: darf nur A-Z, a-z und Zahlen 0-9 enthalten
+        invalid_iso_date_formatting: Datum muss im Format YYYY-MM-DD eingegeben werden
         prefix_or_postfix_must_be_given: Prefix oder Postfix muss angegeben werden
+        sku_already_taken: wird bereits verwendet
     models:
       article:
         one: Artikel
@@ -256,8 +265,8 @@ gn:
         one: Firma
         other: Firmen
       cost_center:
-        one: Kostenstelle
-        other: Kostenstellen
+        one: Kostenkreis
+        other: Kostenkreise
       coupon:
         one: Gutschein
         other: Gutscheine
@@ -348,6 +357,9 @@ gn:
       user:
         one: Benutzer
         other: Benutzer
+      user_login:
+        one: Arbeitszeit
+        other: Arbeitszeiten
       vendor:
         one: Betrieb
         other: Betriebe
@@ -394,8 +406,11 @@ gn:
     invoice_item_list:
       served_by_X: Sie wurden bedient von %{user}
     show:
+      count: Anzahl
       go_to_bookings_calendar: Zum Buchungs-Kalender gehen
       search_by_number: Suche nach Nummer
+      sum: Summe
+      unit_price: Preis
   cameras:
     create:
       success: Kamera erfolgreich gespeichert
@@ -441,15 +456,15 @@ gn:
   copy: Kopie
   cost_centers:
     create:
-      success: Kostenstelle erfolgreich gespeichert
+      success: Kostenkreis erfolgreich gespeichert
     destroy:
-      success: Kostenstelle erfolgreich gelöscht
+      success: Kostenkreis erfolgreich gelöscht
     index:
       active: aktiv
       inactive: inaktiv
     new:
-      edit_cost_center: Kostenstelle bearbeiten
-      new_cost_center: Neue Kostenstelle
+      edit_cost_center: Kostenkreis bearbeiten
+      new_cost_center: Neuer Kostenkreis
   count: Anzahl
   create: Anlegen
   customers:
@@ -495,10 +510,12 @@ gn:
   kitchen: Kueche
   layouts:
     application:
-      admin_menu_hint: ☚ Klicken Sie hier, um das Hauptmenü zu öffnen
+      admin_menu_hint: "☚ Klicken Sie hier, um das Hauptmenü zu öffnen"
       submit_scribe: OK
     header:
-      configuration: Konfiguration
+      settings_common: Allgemein
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: abmelden
   messages:
     hello_username: Hallo %{name}
@@ -600,7 +617,7 @@ gn:
       new_page: Neue Karte
   partials:
     default_blurb: Text
-    error_during_evaluation: ! 'Fehler: '
+    error_during_evaluation: 'Fehler: '
     no_presentation_found:
       no_presentations_found: Für dieses Element ist noch keine Vorlage definiert.
   payment_methods:
@@ -650,7 +667,7 @@ gn:
     new:
       add_option_to_sent_item: Optionen zu abgesendeten Artikeln hinzufügen
       allow_exit: Browser-Fenster schließen
-      assign_cost_center: Kostenstelle zuweisen
+      assign_cost_center: Kostenkreis zuweisen
       assign_order_to_booking: Bestellungen einer Buchung zuweisen
       assign_order_to_user: Benutzer der Bestellung zuweisen
       assign_tables: Tische an Benutzer zuweisen
@@ -663,6 +680,7 @@ gn:
       download_csv: Download CSV
       download_database: Datenbank herunterladen
       edit_role: Rolle bearbeiten
+      enter_payment_methods: Zahlungsmethoden eingeben
       finish_all_settlements: Alle Losungen abschließen
       finish_orders: Bestellungen abschließen
       finish_own_settlement: Eigene Losung abschließen
@@ -674,7 +692,7 @@ gn:
       manage_business_invoice: Geschäftsrechnungen verwalten
       manage_cameras: Kameras verwalten
       manage_categories: Kategorien verwalten
-      manage_cost_centers: Kostenstellen verwalten
+      manage_cost_centers: Kostenkreise verwalten
       manage_customers: Kundendatenbank verwalten
       manage_hotel: Hotel managen
       manage_options: Optionen verwalten
@@ -712,20 +730,20 @@ gn:
       split_items: Rechnung splitten
       statistics:
         statistics_category: Kategorien
-        statistics_hour: Stunden
         statistics_payment_method: Zahlungsmethoden
-        statistics_sold_quantities: Veraufsmengen
+        statistics_sold_quantities: Verkaufsmengen
         statistics_statistic_category: Statistik-Kategorien
         statistics_table: Tische
         statistics_tax: Steuern
+        statistics_user: Benutzer
         statistics_weekday: Wochentage
       statistics_category: Statistik zeige Kategorie
-      statistics_hour: Statistik zeige Stunde
       statistics_payment_method: Statistik zeige Zahlungsmethode
       statistics_sold_quantities: Statistik zeige Verkaufszahlen
       statistics_statistic_category: Statistik zeige Statistik-Kategorien
       statistics_table: Statistik zeige Tisch
       statistics_tax: Statistik zeige Steuern
+      statistics_user: Statistik zeige Benutzer
       statistics_weekday: Statistik zeige Wochentag
       take_orders: Bestellungen aufnehmen
       view_all_settlements: Alle Losungen ansehen
@@ -750,6 +768,7 @@ gn:
       new_room: Neues Zimmer
   scopes:
     active: Aktiv
+    inactive: Inaktiv
     waiterpad: Kellnerblock
   scroll_down: Hinunterscrollen
   scroll_to_area: Gehe in Raum
@@ -759,15 +778,15 @@ gn:
       edit_season: Saison bearbeiten
       new_season: Neue Saison
   send_and_go_back: Senden und zurück
-  served_by_X_on_table_Y: Es bediente Sie %{waiter} auf Tisch %{table}
+  served_by_X_on_table_Y: Es bediente Sie %{waiter} an Tisch %{table}
   server_no_response: Der Server antwortet nicht mehr. Der Server ist entweder überlastet
     oder die Funkverbindung ist abgerissen.
   sessions:
     browser_warning:
       continue: weiter
-      warning: Salor unterstützt nur die Browser Google Chrome (Windows), Chromium
-        (Linux) oder Safari (Apple). Bitte installieren Sie einen dieser Browser und
-        versuchen Sie es erneut.
+      warning: Die Hotelfunktion wird nur von den Browsern Google Chrome (Windows),
+        Chromium (Linux) oder Safari (Apple) unterstützt. Bitte verwenden Sie einen
+        dieser Browser und versuchen Sie es erneut.
     new:
       email: Ihre E-Mail
       login: Login
@@ -782,7 +801,7 @@ gn:
     detailed_list:
       changed_price: Preis verändert von %{byuser}.
       count: Anzahl
-      order_number_on_table_on_date: ! '%{order} %{number} auf %{table} am %{time}'
+      order_number_on_table_on_date: "%{order} %{number} auf %{table} am %{time}"
       reduced_count: Anzahl reduziert von %{maxcount} auf %{count}.
       revenue: Umsatz
       total: Gesamt
@@ -815,6 +834,17 @@ gn:
       limit_by: Einschränken
       query: Abfrage
       weekday: Wochentag
+    statistics_sold_quantities:
+      article_name: Name Artikel
+      category: Kategorie
+      count: Verkaufsmenge
+      quantity_name: Name Variante
+      sort_by: Sortieren nach
+      sum: Umsatz
+      tax: Steuerklasse
+    statistics_weekday:
+      public_holidays: Feiertage
+      weekday: Tag
   stocks:
     new:
       edit_stock: Lagerartikel bearbeiten
@@ -852,10 +882,11 @@ gn:
       new_user: Neuer Benutzer
       select_with_ctrl_key: Wählen oder abwählen mit [Strg] + linke Maustaste
   various:
+    already_finished_warning: Diese Bestellung wurde bereits von jemand anderem abgeschlossen.
     attempt: Versuch
     begin: Anfang
     cancel: Abbrechen
-    check_order_on_workstation: Bestellung auf anderem Gerät überprüfen
+    check_order_on_workstation: Bestellung auf Basisstation überprüfen
     common_surcharges: Aufschläge
     connecting: Verbinde...
     consumations: Konsumationen
@@ -864,7 +895,7 @@ gn:
     customer_request_waiter: Kellner anfragen
     delete: Löschen
     display: Anzeigen
-    double_submission_warning: ! 'Warnung: Mehrfach-Übermittlung. Bitte informieren
+    double_submission_warning: 'Warnung: Mehrfach-Übermittlung. Bitte informieren
       Sie das Techniker-Team über diesen Vorfall.'
     download: Download
     end: Ende
@@ -872,8 +903,8 @@ gn:
       assistance_text: Bitte klicken Sie auf den Button "HOME" und versuchen Sie es
         nochmals. Falls der Fehler erneut auftritt, rufen Sie den Kundensupport. Wir
         sind umgehend um Sie bemüht.
-      exception_description: ! 'Fehlerbeschreibung:'
-      exception_in_files: ! 'Der Fehler trat in diesen Dateien auf:'
+      exception_description: 'Fehlerbeschreibung:'
+      exception_in_files: 'Der Fehler trat in diesen Dateien auf:'
       oops_an_error_occurred: Oops! Es ist leider ein Fehler aufgetreten
     finish_was_requested: Sie haben die Bezahlung angefordert. Bitte haben Sie ein
       wenig Geduld.
@@ -900,8 +931,7 @@ gn:
       aufgetreten. Bitte Bestellung auf anderem Gerät überprüfen.
     server_error_short: Serverfehler
     server_not_responded: Keine Antwort vom Server. Bitte Ausdruck der Bestellung
-      manuell überprüfen. Danach nochmal absenden oder abbrechen um Änderungen zu
-      verwerfen.
+      manuell überprüfen.
     sold_quantities: Verkaufsmengen
     statistics: Statistik
     subtotal: Gesamt
@@ -913,7 +943,7 @@ gn:
     tax_amount: Betrag
     time: Zeit
     total_price_abbreviation: GP
-    translations: Übersetzungen
+    translations: "Übersetzungen"
     unamed: Unbenannt
     unit_price_abbreviation: EP
     waiter_was_requested: Sie haben einen Kellner gerufen. Bitte haben Sie ein wenig
@@ -928,7 +958,7 @@ gn:
     form:
       add_printer: Drucker hinzufügen
       identify_printers: Drucker identifizieren
-      print_via_salorbin_explanation: ! 'Wenn Sie über den Browser salor-bin drucken
+      print_via_salorbin_explanation: 'Wenn Sie über den Browser salor-bin drucken
         wollen, fügen Sie die folgenden Informationen in den Optionsdialog des salor-bin
         Browsers ein:'
       test_printers: Drucker testen

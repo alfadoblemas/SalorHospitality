@@ -14,11 +14,14 @@ class StatisticsController < ApplicationController
 
   def index
     params[:type] = "" unless @current_user.role.permissions.include?(params[:type])
-    @from, @to = assign_from_to(params)
     
-    #settlements for scoping, currently not used
-    @settlements = Settlement.where(:created_at => @from..@to, :finished => true).existing
-    @sids = @settlements.collect{ |s| s.id }
+    #permitted statistics
+    permitted_statistics = @current_user.role.permissions.select{ |p| p =~ /^statistics_.*/ }
+    @permitted_statistics_for_select = permitted_statistics.collect do |ps|
+      [I18n.t("roles.new.statistics.#{ ps }"), ps]
+    end
+    
+    @from, @to = assign_from_to(params)
     
     #taxes
     @taxes = @current_vendor.taxes.existing
@@ -50,22 +53,103 @@ class StatisticsController < ApplicationController
     #days
     test = I18n.t :test # this is needed for production, otherwise the translations hash below will be empty and uninitialized
     daynames = I18n.backend.send(:translations)[I18n.locale][:date][:day_names]
-    @days = daynames.rotate if daynames
-    @weekday = params[:weekday].to_i if params[:weekday] and not params[:weekday].empty?
+    @daynames = daynames.rotate if daynames
+    #@weekday = params[:weekday].to_i if params[:weekday] and not params[:weekday].empty?
+    
 
-    #sales quantities
-    @item_article_ids = Item.connection.execute("SELECT article_id FROM items WHERE vendor_id = #{ @current_vendor.id } AND created_at BETWEEN '#{ @from.strftime("%Y-%m-%d %H:%M:%S") }' AND '#{ @to.strftime("%Y-%m-%d %H:%M:%S") }' AND hidden IS NULL AND quantity_id IS NULL").to_a.flatten.uniq
-    @item_quantity_ids = Item.connection.execute("SELECT quantity_id FROM items WHERE vendor_id = #{ @current_vendor.id } AND created_at BETWEEN '#{ @from.strftime("%Y-%m-%d %H:%M:%S") }' AND '#{ @to.strftime("%Y-%m-%d %H:%M:%S") }' AND hidden IS NULL").to_a.flatten.uniq
-    @articles = Article.where(:id => @item_article_ids).order(:name)
-    @quantities = Quantity.where(:id => @item_quantity_ids).order(:article_name)
-    
-    
-    #permitted statistics
-    permitted_statistics = @current_user.role.permissions.select{ |p| p =~ /^statistics_.*/ }
-    @permitted_statistics_for_select = permitted_statistics.collect do |ps|
-      [I18n.t("roles.new.statistics.#{ ps }"), ps]
+    @current_vendor.public_holidays = params[:public_holidays] if params[:public_holidays]
+    @current_vendor.save
+    if @current_vendor.errors.any?
+      # this will show a warning message in the view
+      flash[:public_holidays_error] = true
+      @public_holidays = params[:public_holidays]
+      return
     end
+    @public_holidays = @current_vendor.public_holidays
+    @public_holidays ||= "#{ Time.now.year }-12-25\n#{ Time.now.year }-12-26" # example for users
     
+    @settlements = @current_vendor.settlements.existing.where(
+      :created_at => @from..@to,
+      :finished => true
+    )
+    @sids = @settlements.collect{ |s| s.id }
+    
+    if params[:statistics_type] == "statistics_weekday" and @current_vendor.public_holidays_array
+      @sids_public_holidays = []
+      @current_vendor.public_holidays_array.each do |holiday_date|
+        holiday_from = Date.parse(holiday_date).beginning_of_day
+        holiday_to = Date.parse(holiday_date).end_of_day
+        next if holiday_from < @from or holiday_from > @to # ignore holidays which are outside of the selected time window
+        settlements = @current_vendor.settlements.existing.where(
+          :created_at => holiday_from..holiday_to,
+          :finished => true
+        )
+        settlement_ids = settlements.collect{ |s| s.id }
+        @sids_public_holidays += settlement_ids
+      end
+      @sids -= @sids_public_holidays
+    end
+
+    # data gathering for sales quantities
+    if params[:statistics_type] == "statistics_sold_quantities"
+      @item_article_ids = @current_vendor.items.existing.where(:settlement_id => @sids).collect{|i| i.article_id}.sort.uniq
+      @item_quantity_ids = @current_vendor.items.existing.where(:settlement_id => @sids).collect{|i| i.quantity_id}
+      @item_quantity_ids.delete(nil)
+      @item_quantity_ids.sort!
+      @item_quantity_ids.uniq!
+      
+      @articles = Article.where(:id => @item_article_ids).order(:name)
+      @quantities = Quantity.joins(:article).where(:id => @item_quantity_ids).order("articles.tax_id ASC")
+      @data = {}
+      @articles.each do |a|
+        next if not params[:filter_tax_id].blank? and a.taxes.first.id != params[:filter_tax_id].to_i
+        items = @current_vendor.items.existing.where(
+          :refunded => nil,
+          :article_id => a.id,
+          :quantity_id => nil,
+          :settlement_id => @sids,
+          :user_id => @uids,
+          :cost_center_id => @csids
+        )
+        @data["article_#{ a.id }"] = {
+          :article_name => a.name,
+          :quantity_name => "",
+          :full_name => a.name,
+          :tax => a.taxes.first.name,
+          :tax_letter => a.taxes.first.letter,
+          :category => a.category.name,
+          :count => items.sum(:count).round(2),
+          :sum => items.sum(:sum).round(2)
+        }
+      end
+      
+      @quantities.each do |q|
+        a = q.article
+        next if not params[:filter_tax_id].blank? and a.taxes.first.id != params[:filter_tax_id].to_i
+        items = @current_vendor.items.existing.where(
+          :refunded => nil,
+          :quantity_id => q.id,
+          :settlement_id => @sids,
+          :user_id => @uids,
+          :cost_center_id => @csids
+        )
+        @data["quantity_#{ q.id }"] = {
+          :article_name => a.name,
+          :quantity_name => "#{ q.prefix } #{ q.postfix }",
+          :full_name => "#{ q.prefix } #{ a.name } #{ q.postfix }",
+          :tax => a.taxes.first.name,
+          :tax_letter => a.taxes.first.letter,
+          :category => a.category.name,
+          :count => items.sum(:count).round(2),
+          :sum => items.sum(:sum).round(2)
+        }
+      end
+      params[:sortby] ||= "article_name"
+      @data = @data.sort_by do |id, data|
+        data[params[:sortby].to_sym]
+      end
+    end
+  
     
     if params[:print] == 'true'
       @friendly_unit = I18n.t('number.currency.format.friendly_unit', :locale => @region)
@@ -91,15 +175,17 @@ class StatisticsController < ApplicationController
         end
       end
       
-      r = Receipt.new
-      r.vendor_id = @current_vendor.id
-      r.company_id = @current_company.id
-      r.user_id = @current_user.id
-      r.content = text
-      r.vendor_printer_id = vendor_printer.id
-      r.bytes_written = bytes_written
-      r.bytes_sent = content_sent.length
-      r.save
+      if SalorHospitality::Application::CONFIGURATION[:receipt_history] == true
+        r = Receipt.new
+        r.vendor_id = @current_vendor.id
+        r.company_id = @current_company.id
+        r.user_id = @current_user.id
+        r.content = text
+        r.vendor_printer_id = vendor_printer.id
+        r.bytes_written = bytes_written
+        r.bytes_sent = content_sent.length
+        r.save
+      end
     end
   end
   
@@ -112,7 +198,7 @@ class StatisticsController < ApplicationController
       erb = ERB.new(template, 0, '>')
       return erb.result(binding)
     else
-      return "Printing of this statistic type is not implemented yet.\n\n\n\n\n"
+      return "\n\nPrinting of this statistic type (#{ template }) is not implemented yet.\n\n\n\n\n"
     end
   end
 end

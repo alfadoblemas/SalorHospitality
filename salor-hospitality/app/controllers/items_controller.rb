@@ -26,11 +26,19 @@ class ItemsController < ApplicationController
     if params['split_items_hash']
       order = @current_vendor.orders.existing.find_by_id(params[:order_id])
       render :nothing => true and return unless order
-      Item.split_items(params['split_items_hash'], order)
+      
+      if order.finished == true
+        render :js => "order_already_finished();"
+        return
+      end
+      
+      Item.split_items(params['split_items_hash'])
       table = order.table
-      render_invoice_form(table) and return
+      render_invoice_form(table)
+      return
     end
-    render :nothing => true and return
+    render :nothing => true
+    return
   end
   
   def rotate_tax
@@ -50,15 +58,6 @@ class ItemsController < ApplicationController
     @order = item.order
   end
 
-  def destroy
-    item = get_model
-    item.refund(@current_user, params[:payment_method_id])
-    @order = item.order
-    @payment_method_items = @current_vendor.payment_method_items.existing
-    @selected_payment_method = @current_vendor.payment_methods.existing.where(:cash => true).first
-    render 'edit' # this renders a .js.erb tempate, which in turn renders partial => 'orders/refund_form'
-  end
-  
   def list
     items = {}
     items_json_string = {}
@@ -69,6 +68,12 @@ class ItemsController < ApplicationController
     else
       items[:confirmation] = []
     end
+    
+    #Item.where("(hidden = FALSE OR hidden IS NULL) AND company_id = 1 and vendor_id = 1 AND (confirmation_count > preparation_count OR (preparation_count IS NULL AND confirmation_count > 0))").count
+    
+    #Item.where("(hidden = FALSE OR hidden IS NULL) AND company_id = 1 and vendor_id = 1 AND (preparation_count > delivery_count OR (delivery_count IS NULL AND preparation_count > 0))").count
+    
+    #Item.connection.execute("update items set preparation_count = count, delivery_count = count, confirmation_count = count")
       
     if (params[:type] == 'vendor')
       items[:preparation] = Item.where("(hidden = FALSE OR hidden IS NULL) AND company_id = #{ @current_company.id } and vendor_id = #{ @current_vendor.id } AND (confirmation_count > preparation_count OR (preparation_count IS NULL AND confirmation_count > 0))")

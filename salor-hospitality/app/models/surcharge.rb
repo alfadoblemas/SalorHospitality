@@ -37,21 +37,45 @@ class Surcharge < ActiveRecord::Base
     surcharge = nil
     seasons.each do |s|
       if params['common_surcharge'] == '1'
-        surcharge = vendor.surcharges.where(:season_id => s.id, :guest_type_id => nil, :name => params[:surcharge][:name], :hidden => nil).first
+        # this matches one single surcharge
+        surcharge = vendor.surcharges.where(
+          :season_id => s.id,
+          :guest_type_id => nil,
+          :name => params[:surcharge][:name],
+          :hidden => nil).first
         unless surcharge
-          surcharge = Surcharge.create :season_id => s.id, :guest_type_id => nil, :name => params[:surcharge][:name], :vendor_id => vendor.id, :company_id => vendor.company.id
+          # create if not yet existing
+          surcharge = Surcharge.create(
+            :season_id => s.id,
+            :guest_type_id => nil,
+            :name => params[:surcharge][:name],
+            :vendor_id => vendor.id,
+            :company_id => vendor.company.id
+          )
         end
       else
         guest_types.each do |gt|
           gt_id = params[:common_surcharge] ? nil : gt.id 
-          surcharge = vendor.surcharges.where(:season_id => s.id, :guest_type_id => gt_id, :name => params[:surcharge][:name], :hidden => nil).first
+          # this matches one single surcharge
+          surcharge = vendor.surcharges.where(
+            :season_id => s.id,
+            :guest_type_id => gt_id,
+            :name => params[:surcharge][:name],
+            :hidden => nil).first
           unless surcharge
-            surcharge = Surcharge.create :season_id => s.id, :guest_type_id => gt_id, :name => params[:surcharge][:name], :vendor_id => vendor.id, :company_id => vendor.company.id
+            # create if not yet existing
+            surcharge = Surcharge.create(
+              :season_id => s.id,
+              :guest_type_id => gt_id,
+              :name => params[:surcharge][:name],
+              :vendor_id => vendor.id,
+              :company_id => vendor.company.id
+            )
           end
         end
       end
     end
-    surcharge
+    return surcharge
   end
 
   def update_all_relations(params, old_name)
@@ -63,7 +87,16 @@ class Surcharge < ActiveRecord::Base
       guest_types.each do |gt|
         gt_id = gt ? gt.id : nil
         # this should match only one surcharge at a time
-        surcharge = vendor.surcharges.where(:guest_type_id => gt_id, :season_id => s.id, :name => old_name).update_all :name => params[:surcharge][:name], :radio_select => self.radio_select, :selected => self.selected, :visible => self.visible
+        surcharge = vendor.surcharges.where(
+          :guest_type_id => gt_id,
+          :season_id => s.id,
+          :name => old_name)
+        surcharge.update_all(
+          :name => params[:surcharge][:name],
+          :radio_select => self.radio_select,
+          :selected => self.selected,
+          :visible => self.visible
+        )
       end
     end
   end
@@ -77,7 +110,11 @@ class Surcharge < ActiveRecord::Base
       guest_types.each do |gt|
         gt_id = gt ? gt.id : nil
         # this should match only one surcharge at a time
-        surcharge = vendor.surcharges.where(:guest_type_id => gt_id, :season_id => s.id, :name => self.name).update_all :hidden => true
+        surcharges = vendor.surcharges.where(
+          :guest_type_id => gt_id,
+          :season_id => s.id,
+          :name => self.name)
+        surcharges.update_all :hidden => true
       end
     end
   end

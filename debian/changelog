@@ -1,3 +1,559 @@
+salor-hospitality (5.0.21) jessie; urgency=medium
+
+  * replaced modcoder_excolor colorpicker with colpick
+  * show sku input only on workstations, not on mobile devices
+  * added option to printers to cut every item in a ticket
+  * onscreen keyboard and checkbox javascript fixes for newer jQuery version
+  * fixed database seeding problem for options
+  * permission changes and migration test
+  * fix for deleted payment_methods and cost_centers, report exceptions during settlement finish to technician
+  * moved SKU field into better place
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 03 Jun 2015 11:57:47 +0200
+
+salor-hospitality (5.0.20) jessie; urgency=medium
+
+  * removed observer class, app config changes
+  * fixed depracated rmagick spelling
+  * moved reports into Vendor class, made history creation configurable in config.yml
+  * gitignore ignore tmp
+  * made Receipt saving to database configurable via config.yml
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 26 May 2015 18:06:07 +0200
+
+salor-hospitality (5.0.19) jessie; urgency=medium
+
+  * postinst fix
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 12:52:00 +0200
+
+salor-hospitality (5.0.18) jessie; urgency=medium
+
+  * updated readme and postinst fix
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 12:40:09 +0200
+
+salor-hospitality (5.0.17) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 12:24:06 +0200
+
+salor-hospitality (5.0.16) jessie; urgency=medium
+
+  * deployment test
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 10:33:53 +0200
+
+salor-hospitality (5.0.15) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:54:58 +0200
+
+salor-hospitality (5.0.14) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:54:03 +0200
+
+salor-hospitality (5.0.13) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:47:49 +0200
+
+salor-hospitality (5.0.12) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:41:55 +0200
+
+salor-hospitality (5.0.11) jessie; urgency=medium
+
+  * test to cache gems in debian package
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:40:28 +0200
+
+salor-hospitality (5.0.10) jessie; urgency=medium
+
+  * fixed and faster order splitting
+  * fixed assigning user id
+  * javascript fixes
+  * fixed payment methods for orders
+  * removed debugging logs
+  * fix for hand scribe
+  * fixes for slideshow
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 24 May 2015 09:20:35 +0200
+
+salor-hospitality (5.0.9) jessie; urgency=medium
+
+  * fix for options
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 21:10:45 +0200
+
+salor-hospitality (5.0.8) jessie; urgency=medium
+
+  * run seed only once
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 20:43:15 +0200
+
+salor-hospitality (5.0.7) jessie; urgency=medium
+
+  * removed byebug from deployment Gemfile
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 20:39:16 +0200
+
+salor-hospitality (5.0.6) jessie; urgency=medium
+
+  * gemfile update
+  * strong paramters for bookings working
+  * fixed js error for new jquery
+  * strong paramters for roles
+  * strong paramters for payment methods
+  * strong paramters for customers
+  * strong paramters for tax classes
+  * strong paramters for options
+  * strong paramters for categories
+  * strong paramters for tables
+  * strong paramters for statistic categories
+  * JS fix for statistics
+  * strong paramters for cost centers
+  * strong paramters for cameras
+  * more strong paramters
+  * fix for surcharge display
+  * strong paramters for seasons
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 20:32:59 +0200
+
+salor-hospitality (5.0.5) jessie; urgency=medium
+
+  * sprockets gem version fix
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 14:37:40 +0200
+
+salor-hospitality (5.0.4) jessie; urgency=medium
+
+  * updated changelog
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 13:54:20 +0200
+
+salor-hospitality (5.0.3) jessie; urgency=medium
+
+  * bundle install during installation
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 13:53:56 +0200
+
+salor-hospitality (5.0.2) jessie; urgency=medium
+
+  * fix postinst file for Debian jessie
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 13:11:40 +0200
+
+salor-hospitality (5.0.1) jessie; urgency=medium
+
+  * 775 permissions for all files for better rvm development
+  * integrated escper code for less dependencies on the online API of rubygems.org
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 13:02:26 +0200
+
+salor-hospitality (5.0.0) jessie; urgency=medium
+
+  * ported to rails 4.1.8, sending orders works
+  * added single migration file
+  * nodejs instead of therubyracer
+  * strong parameters for articles
+  * cleaned up article scopes
+  * permit article image upload
+  * strong attributes for vendor
+  * strong parameters for users
+  * updated changelog
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 12:19:06 +0200
+
+salor-hospitality (4.1.4.93) wheezy; urgency=medium
+
+  * always print order numbers on receipts for conformity with legal regulations
+  * updated README
+  * updated README
+  * ported to rails 4.1.8, sending orders works
+  * added single migration file
+  * nodejs instead of therubyracer
+  * strong parameters for articles
+  * cleaned up article scopes
+  * permit article image upload
+  * strong attributes for vendor
+  * strong parameters for users
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 23 May 2015 12:16:23 +0200
+
+salor-hospitality (4.1.4.92) wheezy; urgency=medium
+
+  * increase safe scrolling width on orders screen for mobile devices, add inactive field for articles#index
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 29 Apr 2015 21:15:35 +0200
+
+salor-hospitality (4.1.4.91) wheezy; urgency=medium
+
+  * fix nil problem for db seeding
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 24 Apr 2015 09:48:42 +0200
+
+salor-hospitality (4.1.4.90) wheezy; urgency=medium
+
+  * tax fix for reactivated orders
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 21 Mar 2015 20:21:38 +0100
+
+salor-hospitality (4.1.4.89) wheezy; urgency=medium
+
+  * fixes for sku validation
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 11 Mar 2015 20:10:54 +0100
+
+salor-hospitality (4.1.4.88) wheezy; urgency=medium
+
+  * added various favicons for many different platforms
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 11 Mar 2015 16:43:52 +0100
+
+salor-hospitality (4.1.4.87) wheezy; urgency=medium
+
+  * fix for sku onscreen keyboard and auto-focussing
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 11 Mar 2015 16:19:22 +0100
+
+salor-hospitality (4.1.4.86) wheezy; urgency=medium
+
+  * added SKU support, dont show hidden users at roles#index screen
+  * updated translations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 11 Mar 2015 16:07:23 +0100
+
+salor-hospitality (4.1.4.85) wheezy; urgency=medium
+
+  * fixed missing partial
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 11 Feb 2015 20:27:23 +0100
+
+salor-hospitality (4.1.4.84) wheezy; urgency=medium
+
+  * moved UserLogins into separate table
+  * users with a lower role cant delete users with a higher role
+  * statistics for users work times
+  * updated translations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Thu, 29 Jan 2015 11:21:32 +0100
+
+salor-hospitality (4.1.4.83) wheezy; urgency=medium
+
+  * speed increase and fix for "non-hidden TaxItem Bug": create TaxItems only once when order is finished
+  * removed old refund method. from now on, refunds have to be entered as negative items/orders. this is much better for accounting, and much simpler
+  * include superuser in settlements
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 20 Jan 2015 10:34:49 +0100
+
+salor-hospitality (4.1.4.82) wheezy; urgency=medium
+
+  * printing: added tax letter for sales quantity statistics
+  * added statistic type: user
+  * updated translations
+  * fix for unsupported statistic type message
+  * added tax filter for statistic sold quantities
+  * added tax filter for statistic sold quantities
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 28 Nov 2014 10:30:32 +0100
+
+salor-hospitality (4.1.4.81) wheezy; urgency=medium
+
+  * added additional alternative setting of hidden flags for TaxItems
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 17 Nov 2014 20:53:02 +0100
+
+salor-hospitality (4.1.4.80) wheezy; urgency=medium
+
+  * fix for printed_count when item splitting
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 16 Nov 2014 21:46:18 +0100
+
+salor-hospitality (4.1.4.79) wheezy; urgency=medium
+
+  * dont clutter POS view with opened quantities submenus
+  * max 1 open options div to prevent cluttering
+  * max 1 open options div to prevent cluttering
+  * fixed USA change and refund calculation, refund form: better sorting and payment method selection
+  * reduce Item printed_count together with count
+  * interim receipt now has date, time, table and user info
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 10 Nov 2014 22:34:29 +0100
+
+salor-hospitality (4.1.4.78) wheezy; urgency=medium
+
+  * improved customer listing style
+  * improved vendors listing style
+  * method for copying taxes, categories, articles, quantities and options from one vendor to another
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 05 Nov 2014 11:44:08 +0100
+
+salor-hospitality (4.1.4.77) wheezy; urgency=medium
+
+  * fix for sales count statistics
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 05 Nov 2014 09:19:27 +0100
+
+salor-hospitality (4.1.4.76) wheezy; urgency=medium
+
+  * fix order_id for split OptionItems
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 04 Nov 2014 08:43:04 +0100
+
+salor-hospitality (4.1.4.75) wheezy; urgency=medium
+
+  * fixed order test to consider CostCenter with no_payment_methods flag
+  * Report errors via email to technician when errors during checking. explicit hiding of item associations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 03 Nov 2014 15:22:03 +0100
+
+salor-hospitality (4.1.4.74) wheezy; urgency=medium
+
+  * updated README
+  * pressing accept on onscreen keyboard adds comment and price immediately
+  * no warning about invalid vendor
+  * reversed should/actual in order test
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 01 Nov 2014 19:17:58 +0100
+
+salor-hospitality (4.1.4.73) wheezy; urgency=medium
+
+  * fixed payment method item tests and for USA net prices
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 26 Oct 2014 08:02:45 +0100
+
+salor-hospitality (4.1.4.72) wheezy; urgency=medium
+
+  * fixed non-hidden TaxItems of hidden Items in split orders
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 24 Oct 2014 10:35:54 +0200
+
+salor-hospitality (4.1.4.71) wheezy; urgency=medium
+
+  * better calculation checks
+
+ -- Michael Franzl <office@michaelfranzl.com>  Thu, 23 Oct 2014 13:14:11 +0200
+
+salor-hospitality (4.1.4.70) wheezy; urgency=medium
+
+  * fixed recently introduced bug with finished order checkign
+  * show item prices without options in settlements detailed view
+  * do not regroup items in order.finish, led to wrong TaxItem calculation
+  * clearer code
+  * added history debugging function to Order
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 22 Oct 2014 12:58:39 +0200
+
+salor-hospitality (4.1.4.69) wheezy; urgency=medium
+
+  * fixed css for cut-off popups
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 22 Oct 2014 10:56:32 +0200
+
+salor-hospitality (4.1.4.68) wheezy; urgency=medium
+
+  * printing for sales statistics
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 21 Oct 2014 14:39:17 +0200
+
+salor-hospitality (4.1.4.67) wheezy; urgency=medium
+
+  * fixed typo in migration
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 21 Oct 2014 14:12:43 +0200
+
+salor-hospitality (4.1.4.66) wheezy; urgency=medium
+
+  * loader animation for statistics display
+  * onclick instead of mouseup for selecting articles and highlighting buttons
+  * weekdays statistics now also shows hours, and lists public holidays as a separate day
+  * removed statistics for hours since now included in weekday statistics; code formatting improvement;
+  * updated translations
+  * statistics for sold quantities are now sortable
+  * don't show sales statistcs with count of zero; only consider public holidays within selected time window; print statistics bars
+  * maximum width of items table on mobile devices 640px
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 21 Oct 2014 13:47:56 +0200
+
+salor-hospitality (4.1.4.65) wheezy; urgency=medium
+
+  * iso timestamp for last orders list
+  * fixed short time formatting
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 18 Oct 2014 12:37:16 +0200
+
+salor-hospitality (4.1.4.64) wheezy; urgency=low
+
+  * made empty lines on top of tickets configurable, default is 5 the old value
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 13 Oct 2014 21:29:57 +0200
+
+salor-hospitality (4.1.4.63) wheezy; urgency=low
+
+  * loadify order buttons when visiting tables to prevent race conditions
+  * increase get_table_show timeout to 15 seconds
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 13 Oct 2014 20:57:38 +0200
+
+salor-hospitality (4.1.4.62) wheezy; urgency=low
+
+  * removed raise statements
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 13 Oct 2014 13:18:25 +0200
+
+salor-hospitality (4.1.4.61) wheezy; urgency=low
+
+  * fix for mass_assign_tax
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 13 Oct 2014 13:10:56 +0200
+
+salor-hospitality (4.1.4.60) wheezy; urgency=low
+
+  * updated translations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 12 Oct 2014 13:53:03 +0200
+
+salor-hospitality (4.1.4.59) wheezy; urgency=low
+
+  * better browser warning for hotel feature, admin menu centered, css fix for firefox
+  * to css stable migration
+  * JS warning when order is already finished, reuse order when 2 devices start new order on same table
+  * update notification count on button fix
+  * warnings when an order has already been completed by someone else
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 12 Oct 2014 13:49:11 +0200
+
+salor-hospitality (4.1.4.58) wheezy; urgency=low
+
+  * added roles as main menu entry
+  * better error reporting to find a rare submission bug
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 12 Oct 2014 11:10:33 +0200
+
+salor-hospitality (4.1.4.57) wheezy; urgency=low
+
+  * fixed flash for wrong login data
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 08 Oct 2014 15:26:37 +0200
+
+salor-hospitality (4.1.4.56) wheezy; urgency=low
+
+  * re-added table name and user name to invoices
+  * prettier listings
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 06 Oct 2014 12:49:12 +0200
+
+salor-hospitality (4.1.4.55) wheezy; urgency=low
+
+  * fixed typo, invoice view is sorted by category order
+  * back button on paper invoice redirects to table view
+  * set a random pseudo email address for new customers to fulfill the requirement for emails
+  * button links for better click-ability
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 05 Oct 2014 22:25:40 +0200
+
+salor-hospitality (4.1.4.54) wheezy; urgency=low
+
+  * improved code formatting
+  * fix for TaxItem calculation when rotating taxes
+
+ -- Michael Franzl <office@michaelfranzl.com>  Thu, 02 Oct 2014 19:31:43 +0200
+
+salor-hospitality (4.1.4.53) wheezy; urgency=low
+
+  * new main menu
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 28 Sep 2014 15:23:32 +0200
+
+salor-hospitality (4.1.4.52) wheezy; urgency=low
+
+  * list roles only for current vendor
+  * removed blurb serverd by waiter X on table Y from paper invoice
+  * fix for booking duration, css improvement for booking line item text
+  * do not show surcharges which have deleted seasons or guest type ids, code formatting
+  * improved code formatting
+  * improved code formatting
+  * fixed query of hidden payment method
+  * translations update
+  * reduced delay when going from and to hotel screens
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sat, 27 Sep 2014 12:35:35 +0200
+
+salor-hospitality (4.1.4.51) wheezy; urgency=low
+
+  * fixed missing onscreen keyboards for item options
+  * added missing space in quantity buttons
+  * removed receipt blurb served by X at table Y
+  * re-enabled highlighting effect when adding items
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 26 Sep 2014 19:53:55 +0200
+
+salor-hospitality (4.1.4.50) wheezy; urgency=low
+
+  * fix for failed login when time tracking is enabled
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 24 Sep 2014 09:40:10 +0200
+
+salor-hospitality (4.1.4.49) wheezy; urgency=low
+
+  * symlink problem during installation fix
+  * fix image upload errors due to dangling symlink
+
+ -- Michael Franzl <office@michaelfranzl.com>  Wed, 24 Sep 2014 08:36:38 +0200
+
+salor-hospitality (4.1.4.48) wheezy; urgency=low
+
+  * handle for articles#index
+  * removed waiterpad since unused feature
+  * added permission to enter payment methods
+  * update translations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 19 Sep 2014 10:32:54 +0200
+
+salor-hospitality (4.1.4.47) wheezy; urgency=low
+
+  * fix onclick event for mobile tool button
+
+ -- Michael Franzl <office@michaelfranzl.com>  Sun, 20 Jul 2014 19:47:41 +0200
+
+salor-hospitality (4.1.4.46) wheezy; urgency=low
+
+  * german translation fix
+
+ -- Michael Franzl <office@michaelfranzl.com>  Tue, 24 Jun 2014 17:33:05 +0200
+
+salor-hospitality (4.1.4.45) wheezy; urgency=low
+
+  * fix for splitting with option items, permissions for log dir
+
+ -- Michael Franzl <office@michaelfranzl.com>  Mon, 23 Jun 2014 20:56:10 +0200
+
+salor-hospitality (4.1.4.44) wheezy; urgency=low
+
+  * fixed salor-bin printing on local installations
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 20 Jun 2014 12:48:32 +0200
+
+salor-hospitality (4.1.4.43) wheezy; urgency=low
+
+  * disabled send_queue timeouts
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 13 Jun 2014 22:29:38 +0200
+
+salor-hospitality (4.1.4.42) wheezy; urgency=low
+
+  * new escper verion, TCP/IP printers supported
+
+ -- Michael Franzl <office@michaelfranzl.com>  Fri, 16 May 2014 12:17:11 +0200
+
 salor-hospitality (4.1.4.41) wheezy; urgency=low
 
   * order info also at bottom

@@ -1,27 +1,42 @@
+%label{ :for => "sortby" }= t ".sort_by"
+
+= select_tag "sortby", options_for_select([[t(".article_name"), "article_name"], [t(".quantity_name"), "quantity_name"], [t(".tax"), "tax"], [t(".category"), "category"], [t(".count"), "count"], [t(".sum"), "sum"]], params[:sortby]), :onchange => "statistics_submit();"
+
+%br
+
+%label{ :for => "filter_tax" }= Tax.model_name.human
+
+= select_tag "filter_tax_id", options_from_collection_for_select(@taxes, :id, :name, params[:filter_tax_id]), :include_blank => true, :onchange => "statistics_submit();"
+
+
 %table.settlements.statistics
   %tr
-    %th.bb= Article.model_name.human
-    %th.bb= t :count
-    %th.bb= t :sum
-  - @articles.each do |article|
-    - sold_quantity = @current_vendor.items.existing.where(:refunded => nil, :article_id => article.id, :settlement_id => @sids, :user_id => @uids, :cost_center_id => @csids).sum(:count)
-    - total = @current_vendor.items.existing.where(:refunded => nil, :article_id => article.id, :settlement_id => @sids, :user_id => @uids, :cost_center_id => @csids).sum(:sum)
-    - next if sold_quantity.zero?
+    %th.bb
+      %a= t :article_name
+    %th.bb= t ".quantity_name"
+    %th.bb= t ".tax"
+    %th.bb= t ".category"
+    %th.bb= t ".count"
+    %th.bb= t ".sum"
+  - sub_total = 0
+  - count_total = 0
+  - @data.each do |id, data|
+    - next if data[:count].zero?
+    - sub_total += data[:sum]
+    - count_total += data[:count] 
     %tr
-      %td= article.name
-      %td= sold_quantity
-      %td= number_to_currency total
-      
-%table.settlements.statistics
+      %td= data[:article_name]
+      %td= data[:quantity_name]
+      %td= data[:tax]
+      %td= data[:category]
+      %td= data[:count]
+      %td= number_to_currency data[:sum]
   %tr
-    %th.bb= Quantity.model_name.human
-    %th.bb= t :count
-    %th.bb= t :sum
-  - @quantities.each do |quantity|
-    - sold_quantity = @current_vendor.items.existing.where(:refunded => nil, :quantity_id => quantity.id, :settlement_id => @sids, :user_id => @uids, :cost_center_id => @csids).sum(:count)
-    - total = @current_vendor.items.existing.where(:refunded => nil, :quantity_id => quantity.id, :settlement_id => @sids, :user_id => @uids, :cost_center_id => @csids).sum(:sum)
-    - next if sold_quantity.zero?
-    %tr
-      %td== #{ quantity.prefix } #{ quantity.article.name } #{ quantity.postfix }
-      %td= sold_quantity
-      %td= number_to_currency total
+    %td= t ".sum"
+    %td
+    %td
+    %td
+    %td
+      %b= count_total
+    %td
+      %b= number_to_currency sub_total

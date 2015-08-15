@@ -78,9 +78,10 @@ function add_menu_button(elem,button,callback) {
 
 
 function make_select_widget(elem) {
-  if (elem.attr("no_select_widget") == 1)
+  if (elem.attr("no_select_widget") == 1 || elem.attr("no_select_widget") == "1")
     return;
   elem.hide();
+  elem.attr("no_select_widget", 1);
   var button = create_dom_element('span', {id:'select_widget_button_for_' + elem.attr("id")});
   button.addClass("button select-widget-button");
   button.html(elem.find("option:selected").text());
@@ -103,8 +104,8 @@ function make_select_widget(elem) {
           o.addClass('select-widget-entry-selected');
         }
         o.on('click', function () {
-          elem.find("option:selected").removeAttr("selected"); 
-          elem.find("option[value='"+$(this).val()+"']").attr("selected","selected");
+          elem.find("option:selected").removeAttr("selected");
+          elem.find("option[value='" + $(this).attr("value") + "']").attr("selected","selected");
           elem.change();
           button.html(o.html());
           mdiv.remove();

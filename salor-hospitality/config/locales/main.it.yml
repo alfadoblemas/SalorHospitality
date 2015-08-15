@@ -82,6 +82,7 @@ it:
         finished_at: Finito il
         nr: Numero
         sum: Somma
+        tax_sum: Taxes
       page:
         active: Attivo
         color: Colore
@@ -116,7 +117,9 @@ it:
         price: Prezzo
         usage: Utilizzo
       role:
+        hidden: delete
         name: Nome
+        weight: Level
       room_price:
         base_price: Prezzo Base
         guest_type_id: Tipo Ospite
@@ -217,6 +220,7 @@ it:
         technician_email: e-mail tecnico
         ticket_display_time_order: Ora e numero fattura nello scontrino
         ticket_item_separator: Linea di Separazione scontrino
+        ticket_space_top: Tickets space top
         ticket_tall_font: Altezza font scontrino
         ticket_wide_font: Larghezza font scontrino
         time_offset: Correzione dell'ora (ore)
@@ -229,6 +233,7 @@ it:
         baudrate: Baudrate
         codepage: Codepage
         copies: Copie
+        cut_every_ticket: Cut every ticket
         hidden: cancella
         name: Nome
         path: Percorso
@@ -236,9 +241,14 @@ it:
         pulse_receipt: Beep Ricevuta
         pulse_tickets: Beep Tickets
         ticket_ad: Ticket Ad.
+        one_ticket_per_piece: One ticket per piece
     errors:
       messages:
+        dont_use_weird_skus: may only contain letters A-Z and a-z and numbers from
+          0-9
+        invalid_iso_date_formatting: Dates must be entered in the format YYYY-MM-DD
         prefix_or_postfix_must_be_given: Devono essere impostati Prefisso e Postfisso
+        sku_already_taken: has already been taken
     models:
       article:
         one: Articolo
@@ -348,6 +358,9 @@ it:
       user:
         one: Utente
         other: Utenti
+      user_login:
+        one: Work time
+        other: Work times
       vendor:
         one: Ristorante
         other: Ristoranti
@@ -394,8 +407,11 @@ it:
     invoice_item_list:
       served_by_X: Sarai servito da %{user}
     show:
+      count: Count
       go_to_bookings_calendar: Vai al calendario prenotazioni
       search_by_number: Cerca per numero
+      sum: Sum
+      unit_price: Unit price
   cameras:
     create:
       success: Camera salvata con successo
@@ -495,10 +511,12 @@ it:
   kitchen: Cucina
   layouts:
     application:
-      admin_menu_hint: ☚ Click qui per aprire il menu principale
+      admin_menu_hint: "☚ Click qui per aprire il menu principale"
       submit_scribe: OK
     header:
-      configuration: Configurazione
+      settings_common: General
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: log out %{who}
   messages:
     hello_username: Ciao %{name}!
@@ -598,7 +616,7 @@ it:
       new_page: Nuova pagina
   partials:
     default_blurb: Editami
-    error_during_evaluation: ! 'Errore: '
+    error_during_evaluation: 'Errore: '
     no_presentation_found:
       no_presentations_found: Nessun template definito per questo partial.
   payment_methods:
@@ -661,6 +679,7 @@ it:
       download_csv: Download CSV
       download_database: Download database
       edit_role: Edita ruolo
+      enter_payment_methods: Enter Payment Methods
       finish_all_settlements: Finisci tutti i saldi
       finish_orders: Finisci Ordini
       finish_own_settlement: Finisci proprio saldo
@@ -710,20 +729,20 @@ it:
       split_items: Separa articoli
       statistics:
         statistics_category: Categorie
-        statistics_hour: Ore
         statistics_payment_method: Metodi di pagamento
         statistics_sold_quantities: Quantità vendute
         statistics_statistic_category: Statistica categorie
         statistics_table: Tavoli
         statistics_tax: Tasse
+        statistics_user: Users
         statistics_weekday: Giorni lavorativi
       statistics_category: Statistiche categoria
-      statistics_hour: Statistiche Ora
       statistics_payment_method: Statistiche metodi pagamento
       statistics_sold_quantities: Statistiche quantità vendute
       statistics_statistic_category: Statistiche categoria
       statistics_table: Statistiche tavolo
       statistics_tax: Statistiche tassa
+      statistics_user: Statistics show Users
       statistics_weekday: Statistiche giorni lavorativi
       take_orders: Prendi ordini
       view_all_settlements: Visualizza tutti i saldi
@@ -748,6 +767,7 @@ it:
       new_room: Nuova camera
   scopes:
     active: Attivo
+    inactive: Inactive
     waiterpad: Waiterpad
   scroll_down: Scrolla giù
   scroll_to_area: Vai alla camera
@@ -777,10 +797,10 @@ it:
       username: Username
   settlements:
     detailed_list:
-      changed_price: ! '%{byuser} prezzo cambiato'
+      changed_price: "%{byuser} prezzo cambiato"
       count: Conto
-      order_number_on_table_on_date: ! '%{order} numero %{number} al tavolo %{table}
-        alle %{time}'
+      order_number_on_table_on_date: "%{order} numero %{number} al tavolo %{table}
+        alle %{time}"
       reduced_count: Conto scontato da %{maxcount} a %{count}.
       revenue: Ricavo
       total: Totale
@@ -813,6 +833,17 @@ it:
       limit_by: Limite per
       query: Interrogazione
       weekday: Giorno lavorativo
+    statistics_sold_quantities:
+      article_name: Article name
+      category: Category
+      count: Sales count
+      quantity_name: Quantity name
+      sort_by: Sort by
+      sum: Revenue
+      tax: Tax
+    statistics_weekday:
+      public_holidays: Public holidays
+      weekday: Weekday
   stocks:
     new:
       edit_stock: Edita magazzino
@@ -851,6 +882,7 @@ it:
       select_with_ctrl_key: Seleziona o deseleziona con [Ctrl] + Tasto Sinistro del
         mouse
   various:
+    already_finished_warning: This order has already been completed by someone else.
     attempt: Tentativo
     begin: Inizio
     cancel: Annulla
@@ -863,15 +895,15 @@ it:
     customer_request_waiter: Richiesta cameriere
     delete: Cancella
     display: Schermo
-    double_submission_warning: ! 'Attenzione: Doppia immissione. Comunicalo al supporto
+    double_submission_warning: 'Attenzione: Doppia immissione. Comunicalo al supporto
       tecnico.'
     download: Download
     end: Fine
     exception_page:
       assistance_text: Fai click sul bottone 'HOME' e prova di nuovo. Se si ripresenta
         ancora lo stesso errore, contatta il Supporto Clienti.
-      exception_description: ! 'Descrizione Errore:'
-      exception_in_files: ! 'L''Errore è avvenuto nei seguenti files:'
+      exception_description: 'Descrizione Errore:'
+      exception_in_files: 'L''Errore è avvenuto nei seguenti files:'
       oops_an_error_occurred: Oops! C'è stato un errore'
     finish_was_requested: Hai richiesto il pagamento. Abbi pazienza, arriviamo al
       più presto.
@@ -926,7 +958,7 @@ it:
     form:
       add_printer: Aggiungi stampante
       identify_printers: Identifica stampanti
-      print_via_salorbin_explanation: ! 'Se vuoi stampare attraverso il browser salor-bin,
+      print_via_salorbin_explanation: 'Se vuoi stampare attraverso il browser salor-bin,
         copia (tasti [CTRl]-C) i seguenti dettagli ed incolla (tasti [Ctrl]-V) nel
         dialogo opzioni di salor-bin:'
       test_printers: Test stampanti

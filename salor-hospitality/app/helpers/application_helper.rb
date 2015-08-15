@@ -32,7 +32,11 @@ module ApplicationHelper
       if o.class.name == 'Vendor' and o.images.count < 2 then
         o.images.first.image_type = 'logo' if o.images.first.image_type.nil?
         o.images.build
-        o.images.first.image_type == 'logo' ? o.images.last.image_type = 'invoice_logo' : o.images.last.image_type = 'logo'
+        if o.images.first.image_type == 'logo'
+          o.images.last.image_type = 'invoice_logo'
+        else
+          o.images.last.image_type = 'logo'
+        end
       end
     end
   end
@@ -51,6 +55,12 @@ module ApplicationHelper
       return ''
     else
       return ''
+    end
+  end
+  
+  def mainmenu_entry(path, i18n_path, icon)
+    link_to path do
+      raw "<img src=\"/assets/icons/#{ icon }.svg\" /><br /><span>#{ t i18n_path }</span>"
     end
   end
 end

@@ -14,6 +14,9 @@ require 'rails/all'
 require 'socket'
 require 'pp'
 
+$LOAD_PATH.unshift("#{File.dirname(__FILE__)}/../lib")
+require 'escper/escper'
+
 if defined?(Bundler)
   # If you precompile assets before deploying to production, use this line
   Bundler.require(*Rails.groups(:assets => %w(development test)))
@@ -65,8 +68,6 @@ module SalorHospitality
     else
       CONFIGURATION = YAML::load(File.open(File.join(Rails.root, 'config', 'config.yml'), 'r').read)
     end
-    
-    #raise "The setting :branding_codename in config.yml only supports the values 'billgastro' or 'salorhospitality'" unless ['salorhospitality','billgastro'].include?(CONFIGURATION[:branding_codename])
 
     LANGUAGES = {
       'en' => 'English',
@@ -109,7 +110,8 @@ module SalorHospitality
       'kh' => 'ព្រះរាជាណាចក្រកម្ពុជា',
       'fi' => 'Suomi',
       'hr' => 'Hrvatska',
-      'nl' => 'Nederland' 
+      'nl' => 'Nederland',
+      'ng' => "Nigeria"
     }
     COUNTRIES_REGIONS = {
       'cc' => 'en-us',
@@ -133,7 +135,8 @@ module SalorHospitality
       'kh' => 'kh-kh',
       'fi' => 'fi-fi',
       'hr' => 'hr-hr',
-      'nl' => 'nl-nl'
+      'nl' => 'nl-nl',
+      'ng' => 'en-ng',
     }
     COUNTRIES_INVOICES = {
       'cc' => 'cc',
@@ -157,31 +160,83 @@ module SalorHospitality
       'kh' => 'cc',
       'fi' => 'cc',
       'hr' => 'cc',
-      'nl' => 'nl'
+      'nl' => 'cc',
+      'ng' => 'cc'
     }
     
     FONTS = Dir.glob(File.join(Rails.root,'public','fonts','*.ttf')).collect{ |f| "#{ /fonts\/(.*).ttf/.match(f)[1]}" }
     PERMISSIONS = [
-      'take_orders','reactivate_orders','decrement_items','delete_items',
-      'cancel_all_items_in_active_order','finish_orders','order_notes',
-      'split_items','move_tables','assign_order_to_user','refund',
-      'assign_cost_center','assign_order_to_booking','move_order','interim_receipt',
-      'move_order_from_invoice_form','manage_articles','manage_categories',
-      'manage_statistic_categories','manage_options','add_option_to_sent_item',
-      'finish_all_settlements','finish_own_settlement','view_all_settlements',
-      'view_settlements_table','settlement_statistics_taxes',
-      'settlement_statistics_taxes_categories','settlement_statistics_sold_quantities',
-      'manage_business_invoice','manage_users','manage_taxes','manage_cost_centers',
-      'manage_payment_methods','manage_tables','manage_vendors','manage_cameras',
-      'counter_mode','immediate_order_finish','see_item_notifications_user_preparation','see_item_notifications_user_delivery',
-      'see_item_notifications_vendor_preparation','see_item_notifications_vendor_delivery',
-      'see_item_notifications_static','manage_pages','manage_customers','manage_hotel',
-      'manage_roles','item_scribe','assign_tables','download_database','download_csv',
-      'remote_support','login_locking','mobile_show_tools','receipt_logo','manage_statistics',
-      'manage_statistics_hotel','statistics_weekday','statistics_hour','statistics_table',
-      'statistics_payment_method','statistics_category','statistics_statistic_category',
-      'statistics_tax','statistics_sold_quantities','allow_exit','assign_users_to_vendors',
-      'manage_advertising','manage_user_logins','see_debug'
+      'take_orders',
+      'reactivate_orders',
+      'decrement_items',
+      'delete_items',
+      'cancel_all_items_in_active_order',
+      'finish_orders',
+      'order_notes',
+      'split_items',
+      'move_tables',
+      'assign_order_to_user',
+      'refund',
+      'assign_cost_center',
+      'assign_order_to_booking',
+      'move_order',
+      'interim_receipt',
+      'move_order_from_invoice_form',
+      'manage_articles',
+      'manage_categories',
+      'manage_statistic_categories',
+      'manage_options',
+      'add_option_to_sent_item',
+      'finish_all_settlements',
+      'finish_own_settlement',
+      'view_all_settlements',
+      'view_settlements_table',
+      'settlement_statistics_taxes',
+      'settlement_statistics_taxes_categories',
+      'settlement_statistics_sold_quantities',
+      'manage_business_invoice',
+      'manage_users',
+      'manage_taxes',
+      'manage_cost_centers',
+      'manage_payment_methods',
+      'enter_payment_methods',
+      'manage_tables',
+      'manage_vendors',
+      'manage_cameras',
+      'counter_mode',
+      'immediate_order_finish',
+      'see_item_notifications_user_preparation',
+      'see_item_notifications_user_delivery',
+      'see_item_notifications_vendor_preparation',
+      'see_item_notifications_vendor_delivery',
+      'see_item_notifications_static',
+      'manage_pages',
+      'manage_customers',
+      'manage_hotel',
+      'manage_roles',
+      'item_scribe',
+      'assign_tables',
+      'download_database',
+      'download_csv',
+      'remote_support',
+      'login_locking',
+      'mobile_show_tools',
+      'receipt_logo',
+      'manage_statistics',
+      'manage_statistics_hotel',
+      'statistics_weekday',
+      'statistics_table',
+      'statistics_payment_method',
+      'statistics_category',
+      'statistics_statistic_category',
+      'statistics_tax',
+      'statistics_sold_quantities',
+      'statistics_user',
+      'allow_exit',
+      'assign_users_to_vendors',
+      'manage_advertising',
+      'manage_user_logins',
+      'see_debug',
     ]
     
     if SalorHospitality::Application::CONFIGURATION[:exception_notification] == true
@@ -204,10 +259,6 @@ module SalorHospitality
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
     # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
-
-    # Activate observers that should always be running.
-    # config.active_record.observers = :cacher, :garbage_collector, :forum_observer
-    config.active_record.observers = :history_observer
     
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.

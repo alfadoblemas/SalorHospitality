@@ -74,7 +74,7 @@ fi:
         category_id: Kategoria
         hidden: poista
         name: Nimi
-        no_ticket: Älä tulosta lappua
+        no_ticket: "Älä tulosta lappua"
         price: Hinta
         separate_ticket: Leikkaa lappu
       order:
@@ -82,6 +82,7 @@ fi:
         finished_at: Päättyi
         nr: Numero
         sum: Summa
+        tax_sum: Taxes
       page:
         active: aktiivinen
         color: Väri
@@ -116,7 +117,9 @@ fi:
         price: variantti hinta
         usage: käyttö
       role:
+        hidden: delete
         name: Nimi
+        weight: Level
       room_price:
         base_price: Perushinta
         guest_type_id: Vierasluokka
@@ -175,7 +178,7 @@ fi:
         active: aktiivinen?
         advertising_timeout: Mainosajan katkaisu
         advertising_url: Mainonta URL
-        audio: Äänimerkit
+        audio: "Äänimerkit"
         color: Väri
         confirmation_user: Vahvista kaukotilaukset
         default_vendor_id: Kirjaudu myyntipisteen sivuille
@@ -217,6 +220,7 @@ fi:
         technician_email: Teknikko sähköposti
         ticket_display_time_order: Lisää aika ja laskun nro lappuun
         ticket_item_separator: Lappun erittelyviiva
+        ticket_space_top: Tickets space top
         ticket_tall_font: Lappu pitkä fontti
         ticket_wide_font: Lappu leveä fontti
         time_offset: Aikakorjaus (tuntia)
@@ -229,6 +233,7 @@ fi:
         baudrate: baudrate
         codepage: codepage
         copies: kopioita
+        cut_every_ticket: Cut every ticket
         hidden: poista
         name: Nimi
         path: polku
@@ -236,9 +241,14 @@ fi:
         pulse_receipt: Piippaus kuittista
         pulse_tickets: Piippaus lapusta
         ticket_ad: Ticket Ad.
+        one_ticket_per_piece: One ticket per piece
     errors:
       messages:
+        dont_use_weird_skus: may only contain letters A-Z and a-z and numbers from
+          0-9
+        invalid_iso_date_formatting: Dates must be entered in the format YYYY-MM-DD
         prefix_or_postfix_must_be_given: Etu- tai jälkiliite on annettava
+        sku_already_taken: has already been taken
     models:
       article:
         one: Artikkeli
@@ -348,6 +358,9 @@ fi:
       user:
         one: Käyttäjä
         other: Käyttäjät
+      user_login:
+        one: Work time
+        other: Work times
       vendor:
         one: Myyntipiste
         other: Myyntipsteet
@@ -394,8 +407,11 @@ fi:
     invoice_item_list:
       served_by_X: Teitä palveli %{user}
     show:
+      count: Count
       go_to_bookings_calendar: Siirry varausten kalenterinäkymään
       search_by_number: Etsi numerolla
+      sum: Sum
+      unit_price: Unit price
   cameras:
     create:
       success: Kamera on tallennettu
@@ -495,10 +511,12 @@ fi:
   kitchen: Keittiö
   layouts:
     application:
-      admin_menu_hint: ☚ Klikkaa tästä avataksesi päävalikon
+      admin_menu_hint: "☚ Klikkaa tästä avataksesi päävalikon"
       submit_scribe: OK
     header:
-      configuration: Konfigurointi
+      settings_common: General
+      settings_hotel: Hotel
+      settings_restaurant: Restaurant
   logout: kirjaudu ulos %{who}
   messages:
     hello_username: Terve %{name}!
@@ -598,7 +616,7 @@ fi:
       new_page: Uusi sivu
   partials:
     default_blurb: muokkaa minua
-    error_during_evaluation: ! 'Virhe: '
+    error_during_evaluation: 'Virhe: '
     no_presentation_found:
       no_presentations_found: Mallia ei löydy tähän elementtiin.
   payment_methods:
@@ -661,6 +679,7 @@ fi:
       download_csv: Lataa CSV
       download_database: Lataa tietokanta
       edit_role: Muokkaa asema
+      enter_payment_methods: Enter Payment Methods
       finish_all_settlements: Suorita loppuun kaikki tilitykset
       finish_orders: Suorita loppuun tilaukset
       finish_own_settlement: Suoria loppuun oma tilitys
@@ -712,20 +731,20 @@ fi:
       split_items: Erittele nimikkeet
       statistics:
         statistics_category: Kategoriat
-        statistics_hour: Tunnit
         statistics_payment_method: Maksutavat
         statistics_sold_quantities: Myydyt määrät
         statistics_statistic_category: Tilaston kategoriat
         statistics_table: Pöydät
         statistics_tax: Verot
+        statistics_user: Users
         statistics_weekday: Arkisin
       statistics_category: Kategoriat mukana tilastossa
-      statistics_hour: Tunnit mukana tilastossa
       statistics_payment_method: Maksutavat mukana tilastossa
       statistics_sold_quantities: Myydyt määrät mukana tilastossa
       statistics_statistic_category: Tilaston Kategoriat mukana tilastossa
       statistics_table: Pöydät mukana tilastossa
       statistics_tax: Verot mukana tilastossa
+      statistics_user: Statistics show Users
       statistics_weekday: Arkisin mukana tilastossa
       take_orders: Ota tilauksia
       view_all_settlements: Näytä kaikki tilitykset
@@ -750,6 +769,7 @@ fi:
       new_room: Uusi huone
   scopes:
     active: Aktiivinen
+    inactive: Inactive
     waiterpad: Tarjoilijan lehtiö
   scroll_down: Vieritä alaspäin
   scroll_to_area: Siirry huoneen tietoihin
@@ -779,10 +799,10 @@ fi:
       username: Käyttäjä
   settlements:
     detailed_list:
-      changed_price: ! '%{byuser} muutti hintaa'
+      changed_price: "%{byuser} muutti hintaa"
       count: Laske
-      order_number_on_table_on_date: ! '%{order} numero %{number} %{table}:ssä, klo:
-        %{time}'
+      order_number_on_table_on_date: "%{order} numero %{number} %{table}:ssä, klo:
+        %{time}"
       reduced_count: Laske vähennetty %{maxcount} :sta %{count}:lle.
       revenue: Tulot
       total: Yhteensä
@@ -815,6 +835,17 @@ fi:
       limit_by: Rajoita
       query: Kysely
       weekday: Arkipäivä
+    statistics_sold_quantities:
+      article_name: Article name
+      category: Category
+      count: Sales count
+      quantity_name: Quantity name
+      sort_by: Sort by
+      sum: Revenue
+      tax: Tax
+    statistics_weekday:
+      public_holidays: Public holidays
+      weekday: Weekday
   stocks:
     new:
       edit_stock: Muokkaa varasto
@@ -852,6 +883,7 @@ fi:
       new_user: Uusi käyttäjä
       select_with_ctrl_key: Valitse tai poista [Ctrl] + hiiren vasen painike kanssa
   various:
+    already_finished_warning: This order has already been completed by someone else.
     attempt: Yrittää
     begin: Aloita
     cancel: Peruuta
@@ -864,15 +896,15 @@ fi:
     customer_request_waiter: Pyydä tarjoilija
     delete: Poista
     display: Näyttä
-    double_submission_warning: ! 'Varoitus: kaksinkertainen syöttö. Ilmoita asiasta
+    double_submission_warning: 'Varoitus: kaksinkertainen syöttö. Ilmoita asiasta
       tekniselle tuelle.'
     download: Lataa
     end: Loppu
     exception_page:
       assistance_text: Klikkaa painiketta "HOME" ja yritä uudelleen. Jos näet saman
         virheen kahdesti, ota yhteyttä asiakaspalveluumme.
-      exception_description: ! 'Virhekuvaus:'
-      exception_in_files: ! 'Virhe tapahtui seuraavissa tiedostoissa:'
+      exception_description: 'Virhekuvaus:'
+      exception_in_files: 'Virhe tapahtui seuraavissa tiedostoissa:'
       oops_an_error_occurred: Hups! Virhe on tapahtunut
     finish_was_requested: Olet pyytänyt maksua. Ole hyvä ja odota hetki, palvelemme
       sinua pian.

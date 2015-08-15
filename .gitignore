@@ -11,6 +11,7 @@
 *.xcf
 *~
 *.deb
+tmp
 salor-hospitality/tmp/*.txt
 salor-hospitality/tmp/sass-cache
 salor-hospitality/tmp/pids
@@ -20,6 +21,7 @@ salor-hospitality/tmp/sockets
 salor-hospitality/public/uploads/*
 salor-hospitality/vendor/bundle
 salor-hospitality/vendor/plugins
+salor-hospitality/vendor/cache
 salor-hospitality/.bundle
 salor-hospitality/config/database.yml
 *.log

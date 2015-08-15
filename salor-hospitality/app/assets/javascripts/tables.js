@@ -17,9 +17,10 @@ function get_table_show(table_id) {
   $.ajax({
     type: 'GET',
     url: '/tables/' + table_id,
-    timeout: 7000,
+    timeout: 15000,
     cache: false,
     complete: function(data,status) {
+      unloadify_order_buttons();
       if (status == 'timeout') {
         if ( get_table_show_retry ) {
           $('#order_info').html(i18n.no_connection_retrying);
@@ -72,12 +73,12 @@ function update_tables() {
     },
     complete: function(data, status) {
       if (status == 'timeout' ) {
-        send_email('update_tables(): timeout', '');
+        //send_email('update_tables(): timeout', '');
         //alert(i18n.server_not_responded);
       } else if (status == 'error') {
         switch(data.readyState) {
           case 0:
-            send_email('update_tables(): No connection error', '');
+            //send_email('update_tables(): No connection error', '');
             break;
           case 4:
             send_email('update_tables(): Server Error', '');
@@ -218,7 +219,7 @@ function render_tables() {
       if (v.e && !(!permissions.confirmation_user && (v.cp || v.rf || v.rw))) {
         // when confirmation_user is false, this user cannot view the order if any customer requests are pending
         _set('table',v,table);
-        table.on('mousedown', function() {
+        table.on('click', function() {
           var v = _get('table',$(this));
           route('table',v.id);
         });

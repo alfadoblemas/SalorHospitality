@@ -24,11 +24,12 @@ function display_quantities(article_id, target) {
     var q_object = resources.q[q_id];
     var qbutton = $(document.createElement('div'));
     qbutton.addClass('quantity');
-    qbutton.html(q_object.pre + q_object.post);
+    qbutton.html(q_object.pre + " " + q_object.post);
     (function() {
       var element = qbutton;
       var quantity_id = q_id;
       qbutton.on('click', function(event) {
+        $(".optionsselect").hide();
         add_new_item(quantity_id, 'quantity', false);
         highlight_button(element);
         highlight_border(element);

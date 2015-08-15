@@ -56,6 +56,7 @@ class SessionsController < ApplicationController
           vendor = user.vendors.existing.first
           session[:user_id] = user.id
           session[:company_id] = user.company_id
+         
           if user.default_vendor_id
             session[:vendor_id] = user.default_vendor_id
           else
@@ -74,18 +75,22 @@ class SessionsController < ApplicationController
           flash[:error] = nil
           flash[:notice] = t('messages.hello_username', :name => user.login)
           
-          if vendor and vendor.enable_technician_emails and vendor.technician_email and company.mode == 'demo' and SalorHospitality::Application::SH_DEBIAN_SITEID != 'none'
+          if vendor and
+              vendor.enable_technician_emails and
+              vendor.technician_email and
+              company.mode == 'demo' and
+              SalorHospitality::Application::SH_DEBIAN_SITEID != 'none'
             UserMailer.technician_message(vendor, "Login to #{ company.name }", '', request).deliver
           end
           redirect_to orders_path and return
         else
           flash[:error] = t('messages.user_account_is_currently_locked')
           flash[:notice] = nil
-          redirect_to '/' and return
+          redirect_to new_session_path and return
         end
       else
         flash[:error] = t :wrong_password
-        redirect_to '/' and return
+        redirect_to new_session_path and return
       end
       
     elsif params[:mode] == 'customer'
@@ -107,6 +112,7 @@ class SessionsController < ApplicationController
         redirect_to new_customer_session_path and return
       end
     end
+    
   end
 
   def destroy
@@ -188,7 +194,7 @@ class SessionsController < ApplicationController
       if vendor_printers.any?
         vendor_printers.each do |vp|
           i = sprintf("%04i", vp.id)
-          output << "printerurl#{i}:/uploads/#{ SalorHospitality::Application::SH_DEBIAN_SITEID }/#{ vendor.company.identifier }/#{ File.basename(vp.path) }"
+          output << "printerurl#{i}:/uploads/#{ SalorHospitality::Application::SH_DEBIAN_SITEID }/#{ vendor.hash_id }/escpos/#{ vp.path }.bill"
           output << "printername#{i}:#{ vp.name }"
         end
         output << "interval:#{vendor.automatic_printing_interval}"

@@ -20,7 +20,7 @@ class ApplicationController < ActionController::Base
   end
   
   def create_history_for_route
-    # the following is for better history querying
+    return if SalorHospitality::Application::CONFIGURATION[:history] == false
     h = History.new
     if params.has_key?('model')
       h.model_type = 'Table'
@@ -50,17 +50,12 @@ class ApplicationController < ActionController::Base
           render :json => @model
         end
       
-      when 'invoice_paper', 'refund'
+      when 'invoice_paper', 'order_summary'
         case params['jsaction']
           #----------jsaction----------
           when 'just_print'
-            get_order
+            @order = get_order
             @order.print(['receipt'], @current_vendor.vendor_printers.find_by_id(params[:printer]), {:with_customer_lines => true}) if params[:printer]
-          when 'do_refund'
-            item = get_model(params[:id], Item)
-            item.refund(@current_user, params[:payment_method_id])
-            @order = item.order
-            render 'items/edit' and return # this renders a .js.erb tempate, which in turn renders partial => 'orders/refund_form'
         end
         render :nothing => true
       
@@ -68,13 +63,21 @@ class ApplicationController < ActionController::Base
         case params['jsaction']
           #----------jsaction----------
           when 'move'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             former_table = @order.table
             @order.move(params[:target_table_id])
             render_invoice_form(former_table) # called from outside the static route() function, so the server has to render dynamically via .js.erb depending on the models.
           #----------jsaction----------
           when 'display_tax_colors'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             if session[:display_tax_colors]
               session[:display_tax_colors] = !session[:display_tax_colors] # toggle
             else
@@ -83,18 +86,26 @@ class ApplicationController < ActionController::Base
             render_invoice_form(@order.table) # called from outside the static route() function, so the server has to render dynamically via .js.erb depending on the models.
           #----------jsaction----------
           when 'mass_assign_tax'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             tax = @current_vendor.taxes.find_by_id(params[:tax_id])
             @order.items.existing.each do |item|
               item.calculate_taxes([tax])
             end
-            #@order.calculate_totals
+            @order.calculate_totals
             render_invoice_form(@order.table) # called from outside the static route() function, so the server has to render dynamically via .js.erb depending on the models.
           #----------jsaction----------
           when 'change_cost_center'
             cid = params[:cost_center_id]
             params[:payment_method_items] = nil # we want to create them when user is done with the invoice form.
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             @order.update_attribute :cost_center_id, cid 
             @order.tax_items.update_all :cost_center_id => cid
             @order.payment_method_items.update_all :cost_center_id => cid
@@ -102,7 +113,11 @@ class ApplicationController < ActionController::Base
             render_invoice_form(@order.table)
           #----------jsaction----------
           when 'assign_to_booking'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             @booking = @current_vendor.bookings.find_by_id(params[:booking_id])
             @order.update_attributes(:booking_id => @booking.id)
             @order.finish(@current_user)
@@ -115,7 +130,11 @@ class ApplicationController < ActionController::Base
             end
           #----------jsaction----------
           when 'pay_and_print'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             if params[:interim] == 'true'
               @order.print(['interim_receipt'], @current_vendor.vendor_printers.find_by_id(params[:printer])) if params[:printer]
               render_invoice_form(@order.table)
@@ -128,7 +147,11 @@ class ApplicationController < ActionController::Base
             end
           #----------jsaction----------
           when 'pay_and_no_print'
-            get_order
+            @order = get_order
+            if @order.finished == true
+              render :js => "order_already_finished();"
+              return
+            end
             #Item.split_items(params[:split_items_hash], @order) if params[:split_items_hash]
             @order.pay
             @order.reload
@@ -136,12 +159,10 @@ class ApplicationController < ActionController::Base
         end
       
       when 'table'
-        get_order
+        @order = get_order
         if @order.finished == true
-          # happens when 2 terminals have the same order opened, but one is faster with finishing. in this case, route to the tabe again. happens also when waiter wants to clear a customer order.
-          @table = @order.table
-          @order = nil
-          render 'orders/render_order_form' and return
+          render :js => "order_already_finished();"
+          return
         end
         case params['jsaction']
           #----------jsaction----------
@@ -332,33 +353,26 @@ class ApplicationController < ActionController::Base
     def get_order
       
       if @current_customer
-        params[:model][:table_id] = @current_customer.table.id # security measure
+        params[:model][:table_id] = @current_customer.table.id # security measure for js manipulation
       end
-      
       
       if params[:id]
-        @order = get_model(params[:id], Order)
+        # get a specific order
+        order = get_model(params[:id], Order)
       elsif params[:model] and params[:model][:table_id]
-        # Reuse the order on table if possible
-        @order = @current_vendor.orders.existing.where(:finished => false, :table_id => params[:model][:table_id]).first
-      else
-        if @current_vendor.enable_technician_emails == true and @current_vendor.technician_email
-          UserMailer.technician_message(@current_vendor, "params[:model][:table_id] was not set").deliver
-          Email.create :receipient => @current_vendor.technician_email, :subject => "params[:model][:table_id] was not set", :body => '', :vendor_id => @current_vendor.id, :company_id => @current_company.company_id, :technician => true
-        else
-          ActiveRecord::Base.logger.info "[TECHNICIAN] params[:model][:table_id] was not set"
-        end
+        # Reuse the order on table if possible. Happens when 2 devices are entering a table without order at the same time, and one of the users submits first.
+        order = @current_vendor.orders.existing.where(:finished => false, :table_id => params[:model][:table_id]).last
       end
-      
-      if @order and @order.finished == true
-        # do nothing, since it is already finished
-      elsif @order
-        params[:model][:table_id] = @order.table_id if params[:model] # under high load, table_id may be wrong. We simply do not allow to change the table_id of the order.
-        @order.update_from_params(params, @current_user, @current_customer)
+
+      if order and order.finished == true
+        # do not update or create the order, simply return it
+        return order
+      elsif order
+        order.update_from_params(params, @current_user, @current_customer)
       else
-        @order = Order.create_from_params(params, @current_vendor, @current_user, @current_customer)
+        order = Order.create_from_params(params, @current_vendor, @current_user, @current_customer)
       end
-      return @order
+      return order
     end
 
     def get_booking
@@ -405,7 +419,7 @@ class ApplicationController < ActionController::Base
       false
     end
 
-    def fetch_logged_in_user    
+    def fetch_logged_in_user
       @current_user = User.existing.active.find_by_id session[:user_id] if session[:user_id]
       @current_customer = Customer.find_by_id_hash session[:customer_id_hash] if session[:customer_id_hash]
       
@@ -414,6 +428,7 @@ class ApplicationController < ActionController::Base
 
       unless @current_vendor
         session[:vendor_id] = nil and session[:company_id] = nil
+        #flash[:notice] = "Invalid Vendor"
         redirect_to new_session_path and return
       end
 
@@ -471,11 +486,6 @@ class ApplicationController < ActionController::Base
             redirect_to new_customer_session_path and return
           end
         end
-      end
-      
-      if @current_user
-        @current_user.last_active_at = Time.now
-        @current_user.save
       end
     end
 
@@ -535,12 +545,7 @@ class ApplicationController < ActionController::Base
           request.user_agent.include?('Chrome') ||
           request.user_agent.include?('Qt/')
       
-      if params[:controller] == 'sessions' or params[:controller] == 'application'
-        return autodetect
-      elsif not (params[:controller] == 'orders' and params[:action] == 'index')
-        # all other screens except the order screen
-        return true
-      elsif @current_user.nil? or @current_user.layout == 'auto'
+      if @current_user.nil? or @current_user.layout == 'auto'
         return autodetect
       elsif @current_user.layout == 'workstation'
         return true

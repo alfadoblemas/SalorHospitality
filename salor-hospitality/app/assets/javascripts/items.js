@@ -30,7 +30,36 @@ function render_items() {
   calculate_sum();
 }
 
+function add_item_by_sku(sku) {
+  var found_id = null;
+  var found_model = null;
 
+  $.each(resources.a, function(k, obj) {
+    if (obj.sku == sku) {
+      found_id = obj.ai;
+      return true
+    }
+  });
+  
+  if (found_id) {
+    add_new_item(found_id, "article");
+    return
+  }
+  
+  $.each(resources.q, function(k, obj) {
+    if (obj.sku == sku) {
+      found_id = obj.qi;
+      return true
+    }
+  });
+  
+  if (found_id) {
+    add_new_item(found_id, "quantity");
+    return
+  }
+  
+  
+}
 
 
 // object {hash} contains the attributes of the item that should be created.
@@ -67,7 +96,7 @@ function add_new_item(id, model, add_new, anchor_d) {
     $('#tablerow_' + d + '_count').addClass('updated');
     var option_ids = resources.c[catid].o;
     render_options(option_ids, d);
-    if (settings.workstation) { enable_keyboard_for_items(object.d); }
+    if (settings.workstation) { enable_keyboard_for_items(d); }
   }
   
   if ($('#digital_menucard:visible')) {

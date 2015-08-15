@@ -19,6 +19,7 @@ class Quantity < ActiveRecord::Base
 
   validates_presence_of :price, :if => :not_hidden?
   validates_numericality_of :price, :if => :not_hidden?
+  validate :sku_unique_in_existing, :if => :sku_is_not_weird
 
   validates_each :prefix, :postfix do |record, attr_name, value|
     if attr_name == :prefix
@@ -29,6 +30,27 @@ class Quantity < ActiveRecord::Base
   end
   
   after_commit :set_article_name
+  
+  def sku_is_not_weird
+    if sku and not self.sku == self.sku.gsub(/[^0-9a-zA-Z]/, "") then
+      errors.add(:sku, I18n.t("activerecord.errors.messages.dont_use_weird_skus"))
+      return false
+    end
+    return true
+  end
+  
+  def sku_unique_in_existing
+    return if self.sku.blank?
+    if self.new_record?
+      error = self.article.vendor.quantities.existing.where(:sku => self.sku).count > 0
+    else
+      error = self.vendor.quantities.existing.where("sku = '#{self.sku}' AND NOT id = #{ self.id }").count > 0
+    end
+    if error == true
+      errors.add(:sku, I18n.t("activerecord.errors.messages.sku_already_taken"))
+      return
+    end
+  end
 
   # so that a deleted dynamic nested quantity in articles#new don't add validation errors
   def not_hidden?
@@ -41,5 +63,9 @@ class Quantity < ActiveRecord::Base
   
   def set_article_name
     write_attribute(:article_name, self.article.name)
+  end
+  
+  def full_name
+    "#{ self.prefix } #{ self.article.name } #{ self.postfix }"
   end
 end

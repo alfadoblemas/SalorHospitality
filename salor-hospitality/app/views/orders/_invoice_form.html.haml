@@ -39,7 +39,7 @@
           %td
             %select{ :onchange => "update_order_from_invoice_form({id:#{oid},jsaction:'change_cost_center', cost_center_id:$(this).val()});", :title => t('.set_cost_center') }
               = options_from_collection_for_select(@cost_centers, :id, :name, (invoice_form.cost_center.id if invoice_form.cost_center))
-        - if permit('assign_order_to_booking')
+        - if permit('assign_order_to_booking') and @bookings.any?
           %td
             %select#order_id{ :onchange => "update_order_from_invoice_form({id:#{oid},jsaction:'assign_to_booking', booking_id:$(this).val()});", :title => t('.set_booking') }
               %option
@@ -51,7 +51,7 @@
     %span{ :id => "invoice_username_#{ oid }" }== #{ invoice_form.user.login }
   %p= l invoice_form.created_at, :format => :long
   %table.invoice
-    - invoice_form.items.existing.positioned.each do |item|
+    - invoice_form.items.existing.order(:position_category).each do |item|
       - article_label = item.article.name[0..13]
       - prefix_label = item.quantity.prefix[0..9] if item.quantity and item.quantity.prefix
       - postfix_label = item.quantity.postfix[0..9] if item.quantity and item.quantity.postfix
@@ -87,7 +87,7 @@
       %td{ :colspan => '2' }
         %a{ :onclick => "submit_split_items(#{oid});", :class => 'iconbutton splitinvoice_button', :title => t('.split_invoice')}
       %td{ :colspan => '2', :style => 'text-align:right'}
-        %span.subtotal{:id => "subtotal_#{ oid }"}= number_to_currency invoice_form.sum
+        %span.subtotal{:id => "subtotal_#{ oid }"}= number_to_currency invoice_form.gross
         %br
         %span.subtotal.split{:id => "subtotal_split_#{ oid }"}= number_to_currency 0
     %tr
@@ -95,20 +95,19 @@
         %span.subtotal= t '.change_money'
         %span.subtotal{:id => "change_#{ oid }" }= number_to_currency 0
 
-  - if @current_user.role.permissions.include?('manage_payment_methods') and (invoice_form.cost_center.nil? or invoice_form.cost_center.no_payment_methods == false)
+  - if @current_user.role.permissions.include?('enter_payment_methods') and (invoice_form.cost_center.nil? or invoice_form.cost_center.no_payment_methods == false)
     %div.add_payment_method{:onclick => "add_payment_method(#{oid});"}== + #{ t('activerecord.models.payment_method.other')}
     %div{ :id => "payment_methods_container_#{oid}" }
       %table
 
 :javascript
   submit_json.payment_method_items[#{ oid }] = {};
-  submit_json.totals[#{ oid }] = {model:#{ invoice_form.sum }, model_original:#{ invoice_form.sum }, payment_method_items:0 };
+  submit_json.totals[#{ oid }] = {model:#{ invoice_form.gross }, model_original:#{ invoice_form.gross }, payment_method_items:0 };
   submit_json.split_items_hash[#{ oid }] = {};
-  if (permissions.manage_payment_methods) {
+  if (permissions.enter_payment_methods) {
     add_payment_method(#{oid}, null, submit_json.totals[#{oid}].model);
   }
   
 - if invoice_form.user_id != @current_user.id
   :javascript
-    $("#invoice_username_#{ oid }").toggle('pulsate', { times:300 }, 900);
     $("#invoice_username_#{ oid }").css('color', 'red');
